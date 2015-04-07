@@ -2,83 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="88d4b3f6-6821-41d5-947a-3f505ab8f62f" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/calib_params/hd_left_cam_calib_params.npz" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/calib_params/hd_right_cam_calib_params.npz" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_0.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_0.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_1.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_1.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_10.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_10.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_11.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_11.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_12.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_13.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_14.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_15.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_16.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_17.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_18.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_19.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_2.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_2.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_3.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_3.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_4.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_4.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_5.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_5.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_6.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_6.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_7.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_7.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_8.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_8.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_left_9.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_left_9.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_0.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_0.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_1.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_1.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_10.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_10.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_11.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_11.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_12.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_13.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_14.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_15.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_16.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_2.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_2.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_3.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_3.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_4.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_4.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_5.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_5.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_6.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_6.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_7.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_7.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_8.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_8.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/hd_images/im_right_9.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/images/im_right_9.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/calib_params/left_cam_calib_params.npz" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/calib_params/right_cam_calib_params.npz" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/.name" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/calibrate_cam.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/cam_test_suite.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/data/data.csv" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/estimate_pose.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/record_video.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="cam_test_suite.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -379,7 +303,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="0" width="1922" height="1055" extended-state="7" />
+    <frame x="-1" y="0" width="1922" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
