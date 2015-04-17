@@ -4,17 +4,7 @@
     <bookmark url="file://$PROJECT_DIR$/optimisation.py" line="126" mnemonic="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="88d4b3f6-6821-41d5-947a-3f505ab8f62f" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/find_err.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/optimisation.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/plot_errors.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/calib_params/hd_left_cam_calib_params.npz" afterPath="$PROJECT_DIR$/calib_params/hd_left_cam_calib_params.npz" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/calib_params/right_cam_calib_params.npz" afterPath="$PROJECT_DIR$/calib_params/right_cam_calib_params.npz" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/calibrate_cam.py" afterPath="$PROJECT_DIR$/calibrate_cam.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/estimate_pose.py" afterPath="$PROJECT_DIR$/estimate_pose.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/record_video.py" afterPath="$PROJECT_DIR$/record_video.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="88d4b3f6-6821-41d5-947a-3f505ab8f62f" name="Default" comment="" />
     <ignored path="cam_test_suite.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
