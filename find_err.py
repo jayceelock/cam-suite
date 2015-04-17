@@ -15,7 +15,7 @@ def estimate_pose(cam_matrix, distortion_matrix, T):
     objp = np.zeros((search_size[0] * search_size[1], 3), np.float32)
     objp[:, :2] = np.mgrid[0:search_size[0], 0:search_size[1]].T.reshape(-1, 2)
 
-    cap = cv2.VideoCapture('videos/test.avi')
+    cap = cv2.VideoCapture('videos/right_sd_test2.avi')
 
     trans = []
     rot = []
@@ -40,7 +40,7 @@ def estimate_pose(cam_matrix, distortion_matrix, T):
             rot.append([0, 0, 0])
             trans.append([0, 0, 0])
 
-        cv2.imshow('frame', frame)
+        #cv2.imshow('frame', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -74,7 +74,7 @@ def estimate_pose(cam_matrix, distortion_matrix, T):
 
     return  np.asarray(trans), np.asarray(rot)
 
-def find_offset(trans, rot, vicon_data, T):
+def find_offset(trans, rot, vicon_data_board, T):
     # v_x = []
     # v_y = []
     # v_z = []
@@ -118,20 +118,21 @@ def find_offset(trans, rot, vicon_data, T):
     #         v_pitch_t = 0
     #         v_yaw_t = 0
 
-    v_x = vicon_data[0, :]
-    #print v_x
-    v_y = vicon_data[1, :]
-    v_z = vicon_data[2, :]
-    v_roll = vicon_data[3, :]
-    v_pitch = vicon_data[4, :]
-    v_yaw = vicon_data[5, :]
+    v_x = vicon_data_board[0, :]
+    v_y = vicon_data_board[1, :]
+    v_z = vicon_data_board[2, :]
+    v_roll = vicon_data_board[3, :]
+    v_pitch = vicon_data_board[4, :]
+    v_yaw = vicon_data_board[5, :]
 
-    trans[:, 0] = [trans[:, 0][i]*-10 for i in range(0, len(trans[:, 0]))]
-    trans[:, 1] = [trans[:, 1][i]*-10 + 550 for i in range(0, len(trans[:, 1]))]
-    trans[:, 2] = [trans[:, 2][i]*-10 + 2650 for i in range(0, len(trans[:, 2]))]
+    trans[:, 0] = [trans[:, 0][i]*-10  - 300 for i in range(0, len(trans[:, 0]))]
+    trans[:, 1] = [trans[:, 1][i]*-10  + 0 for i in range(0, len(trans[:, 1]))]
+    trans[:, 2] = [trans[:, 2][i]*-10  + 0 for i in range(0, len(trans[:, 2]))]
 
-    rot[:, 1] = [rot[:, 1][i]*-1 + 88 for i in range(0, len(rot[:, 1]))]
-    rot[:, 2] = [rot[:, 2][i] - 90 if rot[:, 2][i] > 0 else rot[:, 2][i] + 90 for i in range(0, len(rot[:, 2])) ]
+    rot[:, 0] = [rot[:, 0][i] - 180 for i in range(0, len(rot[:, 0]))]
+    rot[:, 1] = [rot[:, 1][i]*-1 for i in range(0, len(rot[:, 1]))]
+    rot[:, 2] = [rot[:, 2][i] - 90 if rot[:, 2][i] > 0 else rot[:, 2][i] + 90 for i in range(0, len(rot[:, 2]))]
+    rot[:, 2] = [rot[:, 2][i] + 180 for i in range(0, len(rot[:, 2]))]
 
     e_x = trans[:, 0] - v_x
     e_y = trans[:, 2] - v_y
@@ -140,19 +141,21 @@ def find_offset(trans, rot, vicon_data, T):
     e_pitch = rot[:, 1] - v_pitch
     e_yaw = rot[:, 0] - v_yaw#np.asarray(v_yaw[300:300+T])
 
+    #print np.isnan(e_x).any()
     # Remove nan values
-    # e_x = e_x[~np.isnan(e_x)]
-    # e_y = e_y[~np.isnan(e_y)]
-    # e_z = e_z[~np.isnan(e_z)]
-    # e_roll = e_roll[~np.isnan(e_roll)]
-    # e_pitch = e_pitch[~np.isnan(e_pitch)]
-    # e_yaw = e_yaw[~np.isnan(e_yaw)]
+    e_x = e_x[~np.isnan(e_x)]
+    e_y = e_y[~np.isnan(e_y)]
+    e_z = e_z[~np.isnan(e_z)]
+    e_roll = e_roll[~np.isnan(e_roll)]
+    e_pitch = e_pitch[~np.isnan(e_pitch)]
+    e_yaw = e_yaw[~np.isnan(e_yaw)]
 
     #print trans[:, 0]
     #print trans[:, 0].shape, v_x.shape
-    plt.plot(trans[:, 1], 'g')
-    plt.plot(v_z, 'r')
-    plt.show()
+
+    # plt.plot(trans[:, 2], 'g')
+    # plt.plot(v_y, 'r')
+    # plt.show()
 
     # plt.plot(e_x, 'r')
     # plt.plot(e_y, 'g')
@@ -164,71 +167,67 @@ def find_offset(trans, rot, vicon_data, T):
 
     return [np.mean(e_x), np.mean(e_y), np.mean(e_z), np.mean(e_roll), np.mean(e_pitch), np.mean(e_yaw)]
 
-def import_vicon_data(T):
-    v_x = []
-    v_y = []
-    v_z = []
-    v_roll = []
-    v_pitch = []
-    v_yaw = []
+def import_vicon_data(file, T):
+    x = []
+    y = []
+    z = []
+    roll = []
+    pitch = []
+    yaw = []
 
     index = 0
-    v_x_t = 0
-    v_y_t = 0
-    v_z_t = 0
-    v_roll_t = 0
-    v_pitch_t = 0
-    v_yaw_t = 0
+    x_t = 0
+    y_t = 0
+    z_t = 0
+    roll_t = 0
+    pitch_t = 0
+    yaw_t = 0
 
-    csvfile = csv.reader(open('vicon_data.csv', 'r'))
+    csvfile = csv.reader(open(file, 'r'))
 
     for row in csvfile:
-        v_x_t = v_x_t + float(row[0])
-        v_y_t = v_y_t + float(row[1])
-        v_z_t = v_z_t + float(row[2])
-        v_roll_t = v_roll_t + float(row[3])
-        v_pitch_t = v_pitch_t + float(row[4])
-        v_yaw_t = v_yaw_t + float(row[5])
+        if not math.isnan(float(row[0])):
+            x_t += float(row[0])
+        if not math.isnan(float(row[1])):
+            y_t += float(row[1])
+        if not math.isnan(float(row[2])):
+            z_t += float(row[2])
+        if not math.isnan(float(row[3])):
+            roll_t += float(row[3])
+        if not math.isnan(float(row[4])):
+            pitch_t += float(row[4])
+        if not math.isnan(float(row[5])):
+            yaw_t += float(row[5])
+
+        #if index < 3250 and index > 3200:
+            #print float(row[1])
 
         index += 1
 
         if index % 10 == 0:
-            # Condition NaN numbers
-            if math.isnan(v_x_t):
-                v_x_t = (v_x[index%10 - 1] + v_x[index%10 - 2]) / 2.0
+            # if index < 3250 and index > 3200:
+            #     print v_pitch_t
 
-            if math.isnan(v_y_t):
-                v_y_t = (v_y[index%10 - 1] + v_y[index%10 - 2]) / 2.0
+            x.append(x_t / 10.0)
+            y.append(y_t / 10.0)
+            z.append(z_t / 10.0)
+            roll.append(roll_t / 10.0)
+            pitch.append(pitch_t / 10.0)
+            yaw.append(yaw_t / 10.0)
 
-            if math.isnan(v_z_t):
-                v_z_t = (v_z[index%10 - 1] + v_z[index%10 - 2]) / 2.0
+            x_t = 0
+            y_t = 0
+            z_t = 0
+            roll_t = 0
+            pitch_t = 0
+            yaw_t = 0
 
-            if math.isnan(v_roll_t):
-                v_roll_t = (v_roll[index%10 - 1] + v_roll[index%10 - 2]) / 2.0
+    return_array = np.array([x, y, z, roll, pitch, yaw])
 
-            if math.isnan(v_pitch_t):
-                v_pitch_t = (v_pitch[index%10 - 1] + v_pitch[index%10 - 2]) / 2.0
+    # plt.plot(return_array[4, :T])
+    # plt.show()
 
-            if math.isnan(v_yaw_t):
-                v_yaw_t = (v_yaw[index%10 - 1] + v_yaw[index%10 - 2]) / 2.0
-
-            v_x.append(v_x_t / 10.0)
-            v_y.append(v_y_t / 10.0)
-            v_z.append(v_z_t / 10.0)
-            v_roll.append(v_roll_t / 10.0)
-            v_pitch.append(v_pitch_t / 10.0)
-            v_yaw.append(v_yaw_t / 10.0)
-
-            v_x_t = 0
-            v_y_t = 0
-            v_z_t = 0
-            v_roll_t = 0
-            v_pitch_t = 0
-            v_yaw_t = 0
-
-    return_array = np.array([v_x, v_y, v_z, v_roll, v_pitch, v_yaw])
-
-    return return_array[:, 300  :300+T]
+    return return_array[:, :T]
 
 def find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T):
 
@@ -275,7 +274,6 @@ def find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T):
     #         v_pitch_t = 0
     #         v_yaw_t = 0
 
-
     f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
     f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
     min_err = 10000000
@@ -286,21 +284,36 @@ def find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T):
             cam_matrix[1, 1] = y
 
             trans, rot = estimate_pose(cam_matrix, distortion_matrix, T)
-            trans[:, 0] = [trans[:, 0][i]*-10 + 0 for i in range(0, len(trans[:, 0]))]
-            trans[:, 1] = [trans[:, 1][i]*-10 + 711 for i in range(0, len(trans[:, 1]))]
-            trans[:, 2] = [trans[:, 2][i]*-10 + 2950 for i in range(0, len(trans[:, 2]))]
+            trans[:, 0] = [trans[:, 0][i]*-10  - 300 for i in range(0, len(trans[:, 0]))]
+            trans[:, 1] = [trans[:, 1][i]*-10  + 0 for i in range(0, len(trans[:, 1]))]
+            trans[:, 2] = [trans[:, 2][i]*-10  + 0 for i in range(0, len(trans[:, 2]))]
 
-            rot[:, 1] = [rot[:, 1][i]*-1 + 90 for i in range(0, len(rot[:, 1]))]
-            rot[:, 2] = [rot[:, 2][i]    - 90 if rot[:, 2][i] > 0 else rot[:, 2][i] + 90 for i in range(0, len(rot[:, 2]))]
+            rot[:, 0] = [rot[:, 0][i] - 180 for i in range(0, len(rot[:, 0]))]
+            rot[:, 1] = [rot[:, 1][i]*-1 for i in range(0, len(rot[:, 1]))]
+            rot[:, 2] = [rot[:, 2][i] - 90 if rot[:, 2][i] > 0 else rot[:, 2][i] + 90 for i in range(0, len(rot[:, 2]))]
+            rot[:, 2] = [rot[:, 2][i] + 180 for i in range(0, len(rot[:, 2]))]
 
             cam_data = np.concatenate((trans, rot), axis = 1).T
+
+            # Allign the corresponding axis
+            temp = cam_data
+            cam_data[1, :] = temp[2, :]
+            cam_data[2, :] = temp[1, :]
+            cam_data[3, :] = temp[5, :]
+            cam_data[5, :] = temp[3, :]
+
+            # plt.plot(cam_data[1, :])
+            # plt.plot(vicon_data[1, :])
+            # plt.show()
 
             #print cam_data
             #print np.isnan(vicon_data).any()
             #print p_off
             err = cam_data - vicon_data - p_off
+   #         [ -1.63802654e+02   2.65880166e+05  -1.83835425e+05   4.72809888e+03 1.09551634e+03  -4.73600089e+03]
             err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
-            #print err_sum.shape
+            #err_sum = np.sum(err, axis=1)
+            #print err_sum
 
             if np.linalg.norm(err_sum) < min_err:
                 print np.linalg.norm(err_sum)
@@ -308,10 +321,13 @@ def find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T):
                 min_err = np.mean(err_sum)
                 min_x = x
                 min_y = y
-        #     plt.plot(trans[:, 0], 'r')
-        # plt.plot(vicon_data[0, :], 'g')
-            plt.plot(err_sum)
-    plt.show()
+
+            #plt.plot(err_sum)
+            plt.plot(cam_data[0, :], 'r:')
+            plt.plot(cam_data[1, :], 'g--')
+            plt.plot(vicon_data[0, :], 'b')
+            plt.plot(vicon_data[1, :], 'k')
+    # plt.show()
             #plt.legend([err_p], [str(x) + '_' + str(y)])
 
     #plt.show()
@@ -324,19 +340,29 @@ def main():
     with np.load('calib_params/right_cam_calib_params.npz') as X:
             _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
 
-    T = 100
-    cam_mat_orig = cam_matrix
+    T = 300
 
     # Read Vicon data
-    vicon_data = import_vicon_data(T)
+    vicon_data_board = import_vicon_data('vicon_data_board.csv', T)
+    vicon_data_cam = import_vicon_data('vicon_data_cam.csv', T)
+    vicon_data = vicon_data_board - vicon_data_cam
+
+    # Original
+    trans_1, rot_1 = estimate_pose(cam_matrix, distortion_matrix, T)
 
     for i in range(3):
         # Step 1: Find pose with focus length f
         trans, rot = estimate_pose(cam_matrix, distortion_matrix, T)
 
+        # plt.plot(rot[:, 2]+180, 'r')
+        # #print trans.shape
+        # plt.plot(vicon_data[3, :], 'g')
+        # plt.show()
+
         # Step 2 + 3: Determine avg error
         p_off = find_offset(trans, rot, vicon_data, T)
         p_off = np.array([p_off]).T
+        print p_off
 
         # Step 4: Minimise err by varying focus length f
         min_x, min_y = find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T)
@@ -345,8 +371,7 @@ def main():
         cam_matrix[0, 0] = min_x
         cam_matrix[1, 1] = min_y
 
-    # Original
-    trans_1, rot_1 = estimate_pose(cam_mat_orig, distortion_matrix, T)
+
     # draw_errors(rot, trans, vicon_data, T)
 
     # Improved
@@ -354,7 +379,7 @@ def main():
     print min_x, min_y
     cam_matrix_min_err[0, 0] = min_x
     cam_matrix_min_err[1, 1] = min_y
-    trans, rot = estimate_pose(cam_matrix_min_err, distortion_matrix, T)
+    trans, rot = estimate_pose(cam_matrix, distortion_matrix, T)
     #draw_errors(rot, trans, vicon_data, T)
 
     # plt.plot(vicon_data[0, :])
@@ -364,19 +389,24 @@ def main():
 
 
 def draw_comparrisson(i_rot, i_trans, o_rot, o_trans, vicon_data):
-    i_trans[:, 0] = [i_trans[:, 0][i]*-10 + 0 for i in range(0, len(i_trans[:, 0]))]
-    i_trans[:, 1] = [i_trans[:, 1][i]*-10 + 711 for i in range(0, len(i_trans[:, 1]))]
-    i_trans[:, 2] = [i_trans[:, 2][i]*-10 + 2950 for i in range(0, len(i_trans[:, 2]))]
 
-    o_trans[:, 0] = [o_trans[:, 0][i]*-10 + 0 for i in range(0, len(o_trans[:, 0]))]
-    o_trans[:, 1] = [o_trans[:, 1][i]*-10 + 711 for i in range(0, len(o_trans[:, 1]))]
-    o_trans[:, 2] = [o_trans[:, 2][i]*-10 + 2950 for i in range(0, len(o_trans[:, 2]))]
+    i_trans[:, 0] = [i_trans[:, 0][i]*-10 - 300 for i in range(0, len(i_trans[:, 0]))]
+    i_trans[:, 1] = [i_trans[:, 1][i]*-10 + 0 for i in range(0, len(i_trans[:, 1]))]
+    i_trans[:, 2] = [i_trans[:, 2][i]*-10 + 0 for i in range(0, len(i_trans[:, 2]))]
 
-    i_rot[:, 1] = [i_rot[:, 1][i]*-1 + 88 for i in range(0, len(i_rot[:, 1]))]
+    o_trans[:, 0] = [o_trans[:, 0][i]*-10 - 300 for i in range(0, len(o_trans[:, 0]))]
+    o_trans[:, 1] = [o_trans[:, 1][i]*-10 + 0 for i in range(0, len(o_trans[:, 1]))]
+    o_trans[:, 2] = [o_trans[:, 2][i]*-10 + 0 for i in range(0, len(o_trans[:, 2]))]
+
+    i_rot[:, 0] = [i_rot[:, 0][i] - 180 for i in range(0, len(i_rot[:, 0]))]
+    i_rot[:, 1] = [i_rot[:, 1][i]*-1 for i in range(0, len(i_rot[:, 1]))]
     i_rot[:, 2] = [i_rot[:, 2][i] - 90 if i_rot[:, 2][i] > 0 else i_rot[:, 2][i] + 90 for i in range(0, len(i_rot[:, 2])) ]
+    i_rot[:, 2] = [i_rot[:, 2][i] + 180 for i in range(0, len(i_rot[:, 2]))]
 
-    o_rot[:, 1] = [o_rot[:, 1][i]*-1 + 88 for i in range(0, len(o_rot[:, 1]))]
+    o_rot[:, 0] = [o_rot[:, 0][i] - 180 for i in range(0, len(o_rot[:, 0]))]
+    o_rot[:, 1] = [o_rot[:, 1][i]*-1 for i in range(0, len(o_rot[:, 1]))]
     o_rot[:, 2] = [o_rot[:, 2][i] - 90 if o_rot[:, 2][i] > 0 else o_rot[:, 2][i] + 90 for i in range(0, len(o_rot[:, 2]))]
+    i_rot[:, 2] = [i_rot[:, 2][i] + 180 for i in range(0, len(i_rot[:, 2]))]
 
     titles = ['x', 'y', 'z', 'roll', 'pitch', 'yaw']
 
