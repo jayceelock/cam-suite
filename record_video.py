@@ -1,4 +1,5 @@
-import numpy as np
+#!/usr/bin/python
+
 import cv2
 import cv2.cv as cv
 import sys
@@ -9,18 +10,19 @@ from subprocess import call
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"hd:o:e",["device=","hi-def=", "output-file="])
+        opts, args = getopt.getopt(argv,"hd:o:ec:",["device=","hi-def=", "output-file=", "left-or-right"])
     except getopt.GetoptError:
-        print 'Usage: record_video.py -d <cam-number> -e <hi-def> -o <outputfile.avi>'
+        print 'Usage: record_video.py -d <cam-number> -e <hi-def> -o <outputfile.avi> -c <left or right>'
         sys.exit(2)
 
     high_def = False
     cam_nbr = 0
     outfile = "output.avi"
+    l_or_r = 'left'
 
     for opt, arg in opts:
         if opt == '-h':
-            print 'Usage: record_video.py -d <cam-number> -e <hi-def> -o <outputfile.avi>'
+            print 'Usage: record_video.py -d <cam-number> -e <hi-def> -o <outputfile.avi> -c <left or right>'
             sys.exit()
         elif opt in ("-d", "--device"):
             cam_nbr = int(arg)
@@ -28,7 +30,14 @@ def main(argv):
             outfile = arg
         elif opt in ("-e", "--hi-def"):
             high_def = True
-            outfile = "hd_" + outfile
+        elif opt in ("-c", "--left-or-right"):
+            l_or_r = arg
+
+    if high_def:
+        outfile = "hd_" + l_or_r + "_" + outfile
+    else:
+        outfile =  l_or_r + "_" + outfile
+    outfile = "videos/" + outfile
 
     try:
         cap = cv2.VideoCapture(cam_nbr)

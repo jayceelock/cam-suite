@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import cv2
 import sys
 import getopt
@@ -20,20 +22,27 @@ def find_pos(tvecs):
 def find_euler_angles(rvecs):
     rmat = cv2.Rodrigues(rvecs)[0]
 
+    C = np.array([[-0.0303272, -0.0006465, -0.9995398],
+                  [-0.0447882, 0.9989963,   0.0007128],
+                  [0.9985361,  0.0447892,  -0.0303257]])
+    print C.shape, rmat.shape
+    rmat = rmat.dot(C)
+
     yaw = math.atan(rmat[1, 0] / rmat[0, 0])
     pitch = math.atan(-rmat[2, 0] / math.sqrt(rmat[2, 1] ** 2 + rmat[2, 2] ** 2))
     roll = math.atan(rmat[2, 1] / rmat[2, 2])
 
-    return (math.degrees(roll), math.degrees(pitch), math.degrees(yaw))
+    return [math.degrees(roll), math.degrees(pitch), math.degrees(yaw)]
 
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"hi:ec:",["hi-def=", "input-file=", "leftor-right", "output-file"])
+        opts, args = getopt.getopt(argv,"hi:ec:o:",["hi-def=", "input-file=", "leftor-right", "output-file"])
     except getopt.GetoptError:
         print 'Usage: calibrate_cam.py -c <left or right cam> -e <hi-def> -i <inputfile.avi> -o <outfile.csv>'
         sys.exit(2)
 
+    high_def = False
     infile = "output.avi"
     outfile = "data.csv"
     calib_file = '_cam_calib_params.npz'
@@ -50,14 +59,22 @@ def main(argv):
             outfile = arg
         elif opt in ("-c", "--left-or-right"):
             l_or_r = arg
-            calib_file = l_or_r + calib_file
+            #calib_file = l_or_r + calib_file
         elif opt in ("-e", "--hi-def"):
-            infile = "hd_" + infile
-            calib_file = "hd_" + calib_file
+            high_def = True
+            #infile = "hd_" + infile
+            #calib_file = "hd_" + calib_file
 
-    infile = l_or_r + "_" + infile
+    if high_def:
+        infile = "hd_" + l_or_r + "_" + infile
+        calib_file = "hd_" + l_or_r + calib_file
+    else:
+        infile = l_or_r + "_" + infile
+        calib_file = l_or_r + calib_file
+
     infile = "videos/" + infile
     outfile = "data/" + outfile
+    print outfile
 
     with np.load('calib_params/' + calib_file) as X:
         _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
@@ -70,6 +87,7 @@ def main(argv):
     objpoints = []
     imgpoints = []
 
+    print infile
     cap = cv2.VideoCapture(infile)
 
     csvfile = open(outfile, 'w+')
@@ -84,7 +102,7 @@ def main(argv):
 
         if ret:
             cv2.cornerSubPix(grey, corners, (11, 11), (-1, -1), criteria)
-            rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix, flags = cv2.CV_EPNP)
+            rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix)
             imgpts, jacobian = cv2.projectPoints(axis, rvecs, tvecs, cam_matrix, distortion_matrix)
 
             csvwriter.writerow(find_euler_angles(rvecs) + find_pos(tvecs))
@@ -92,6 +110,7 @@ def main(argv):
             frame = draw(frame, corners, imgpts)
         else:
             print 'Corners not found in this frame'
+            csvwriter.writerow((0, 0, 0, 0, 0, 0))
 
         cv2.imshow('frame', frame)
 
