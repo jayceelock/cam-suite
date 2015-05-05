@@ -186,12 +186,25 @@ class ErrFinder():
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
         min_err = 10000000
+
+        #l_err_x = np.array([])
+        #l_err_y = np.array([])
+        #l_err_z = np.array([])
+        #l_err_roll = np.array([])
+        #l_err_pitch = np.array([])
+        #l_err_yaw = np.array([])
+        l_err_x = []
+        l_err_y = []
+        l_err_z = []
+    
+        l_focusses = []
+
         for x in f_x:
             for y in f_y:
                 print 'Working on focus ' + str(x) + '_' + str(y)
                 cam_matrix[0, 0] = x
                 cam_matrix[1, 1] = y
-
+                l_focusses.append((x, y))
                 trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T)
 
                 cam_data = np.concatenate((trans, rot), axis = 0)
@@ -199,11 +212,23 @@ class ErrFinder():
                 err = cam_data[:3, :] - vicon_data[:3, :] - p_off[:3, :]
 
                 # Scale the errors by dividing by their expected maxima
-                err[0, :] = err[0, :] / 2000.0
-                err[1, :] = err[1, :] / 5000.0
-                err[2, :] = err[2, :] / 1000.0
+                #err[0, :] = err[0, :] / 2000.0
+                #err[1, :] = err[1, :] / 5000.0
+                #err[2, :] = err[2, :] / 1000.0
+                l_err_x.append(err[0, :])
+                l_err_y.append(err[1, :])
+                l_err_z.append(err[2, :])
+                #l_err_roll.append(err[3, :])
+                #l_err_pitch.append(err[4, :])
+                #l_err_yaw.append(err[5, :])
+                #l_err_x = np.concatenate((l_err_x, err[0, :]), axis = 1)
+                #l_err_y = np.concatenate((l_err_y, err[1, :]), axis = 1)
+                #l_err_z = np.concatenate((l_err_z, err[2, :]), axis = 1)
+                #l_err_roll = np.concatenate((l_err_roll, err[3, :]), axis = 1)
+                #l_err_pitch = np.concatenate((l_err_pitch, err[4, :]), axis = 1)
+                #l_err_yaw = np.concatenate((l_err_yaw, err[5, :]), axis = 1)
 
-                err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
+                #err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
 
                 if self.camdata == None:
                     self.camdata = cam_data
@@ -215,23 +240,41 @@ class ErrFinder():
                     self.vicondata = np.concatenate((self.vicondata, vicon_data), axis = 1)
                     self.errdata = np.concatenate((self.errdata, err), axis = 1)
 
-                plt.plot(err[0, :], 'r')
-                plt.plot(err[1, :], 'g')
-                plt.plot(err[2, :], 'b')
+                #plt.plot(err[0, :], 'r')
+                #plt.plot(err[1, :], 'g')
+                #plt.plot(err[2, :], 'b')
                 #plt.plot(err[3, :], 'c')
                 #plt.plot(err[4, :], 'm')
                 #plt.plot(err[5, :], 'k')
 
-                print 'Error:' + str(err_sum)
-                print 'Norm:' + str(np.linalg.norm(err_sum))
+                #print 'Error:' + str(err_sum)
+                #print 'Norm:' + str(np.linalg.norm(err_sum))
 
-                if np.linalg.norm(err_sum) < min_err:
-                    # print np.mean(err_sum)
-                    print 'Min err at ' + str(x) + '_' + str(y)
-                    min_err = np.linalg.norm(err_sum)
-                    min_x = x
-                    min_y = y
-        plt.show()
+        l_err_x = np.asarray(l_err_x)
+        l_err_y = np.asarray(l_err_z)
+        l_err_z = np.asarray(l_err_z)
+        #l_err_roll = np.asarray(l_err_roll)
+        #l_err_pitch = np.asarray(l_err_pitch)
+        #l_err_yaw = np.asarray(l_err_yaw)
+
+        l_err_x = l_err_x / l_err_x.max()
+        l_err_y = l_err_y / l_err_y.max()
+        l_err_z = l_err_z / l_err_z.max()
+        #l_err_roll = l_err_roll / l_err_roll.max()
+        #l_err_pitch = l_err_pitch / l_err_pitch.max()
+        #l_err_yaw = l_err_yaw / l_err_yaw.max()
+        f = f_x * 2
+        print 'l_err_x shape is ' + str(l_err_x.shape)
+        for i in range(len(l_focusses)):
+            err = np.concatenate((l_err_x, l_err_y, l_err_z), axis = 0)[:, i*T:i * T + T]
+            err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
+            if np.linalg.norm(err_sum) < min_err:
+                # print np.mean(err_sum)
+                print 'Min err at ' + str(l_focusses[i][0]) + '_' + str(l_focusses[i][1])
+                min_err = np.linalg.norm(err_sum)
+                min_x = l_focusses[i][0]
+                min_y = l_focusses[i][1]
+        #plt.show()
 
         return min_x, min_y
 
