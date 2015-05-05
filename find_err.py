@@ -5,6 +5,7 @@ import math
 import cv2
 import csv
 import matplotlib.pyplot as plt
+import random
 
 class ErrFinder():
 
@@ -101,7 +102,10 @@ class ErrFinder():
         temp_rot[:, 0] = rot[:, 2]
         temp_rot[:, 1] = rot[:, 1]
         temp_rot[:, 2] = rot[:, 0]
-
+        
+        if training:
+            samples = random.sample(0, range(temp_trans.shape[0]), 80)
+            temp_trans = [temp_trans.reshape(1, temp_trans.shape[0] * temp_trans.shape[1])[0] for i in samples]
         return  temp_trans.T, temp_rot.T
 
     def find_offset(self, trans, rot, vicon_data_board, T):
@@ -218,15 +222,6 @@ class ErrFinder():
                 l_err_x.append(err[0, :])
                 l_err_y.append(err[1, :])
                 l_err_z.append(err[2, :])
-                #l_err_roll.append(err[3, :])
-                #l_err_pitch.append(err[4, :])
-                #l_err_yaw.append(err[5, :])
-                #l_err_x = np.concatenate((l_err_x, err[0, :]), axis = 1)
-                #l_err_y = np.concatenate((l_err_y, err[1, :]), axis = 1)
-                #l_err_z = np.concatenate((l_err_z, err[2, :]), axis = 1)
-                #l_err_roll = np.concatenate((l_err_roll, err[3, :]), axis = 1)
-                #l_err_pitch = np.concatenate((l_err_pitch, err[4, :]), axis = 1)
-                #l_err_yaw = np.concatenate((l_err_yaw, err[5, :]), axis = 1)
 
                 #err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
 
@@ -251,22 +246,17 @@ class ErrFinder():
                 #print 'Norm:' + str(np.linalg.norm(err_sum))
 
         l_err_x = np.asarray(l_err_x)
-        l_err_y = np.asarray(l_err_z)
+        l_err_y = np.asarray(l_err_y)
         l_err_z = np.asarray(l_err_z)
-        #l_err_roll = np.asarray(l_err_roll)
-        #l_err_pitch = np.asarray(l_err_pitch)
-        #l_err_yaw = np.asarray(l_err_yaw)
 
-        l_err_x = l_err_x / l_err_x.max()
-        l_err_y = l_err_y / l_err_y.max()
-        l_err_z = l_err_z / l_err_z.max()
-        #l_err_roll = l_err_roll / l_err_roll.max()
-        #l_err_pitch = l_err_pitch / l_err_pitch.max()
-        #l_err_yaw = l_err_yaw / l_err_yaw.max()
-        f = f_x * 2
+        l_err_x = l_err_x / float(l_err_x.max())
+        l_err_y = l_err_y / float(l_err_y.max())
+        l_err_z = l_err_z / float(l_err_z.max())
+
         print 'l_err_x shape is ' + str(l_err_x.shape)
         for i in range(len(l_focusses)):
             err = np.concatenate((l_err_x, l_err_y, l_err_z), axis = 0)[:, i*T:i * T + T]
+            print err.shape
             err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
             if np.linalg.norm(err_sum) < min_err:
                 # print np.mean(err_sum)
@@ -274,7 +264,13 @@ class ErrFinder():
                 min_err = np.linalg.norm(err_sum)
                 min_x = l_focusses[i][0]
                 min_y = l_focusses[i][1]
-        #plt.show()
+    
+        plt.plot(l_err_x)
+        plt.show()
+        plt.plot(l_err_y)
+        plt.show()
+        plt.plot(l_err_z)
+        plt.show()
 
         return min_x, min_y
 
