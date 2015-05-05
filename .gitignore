@@ -3,6 +3,11 @@ data/**
 images/**
 hd_images/**
 
+*.csv
+*.jpg
+*.jpeg
+*.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
