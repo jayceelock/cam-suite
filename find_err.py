@@ -21,6 +21,8 @@ class ErrFinder():
         self.samples = random.sample(range(0, self.ts_n), self.tr_n)
 
         self.min_err = 10000000
+        self.min_x = 500
+        self.min_y = 500
 
     def estimate_pose(self, cam_matrix, distortion_matrix, n, training = True):
 
@@ -85,13 +87,14 @@ class ErrFinder():
                     if rot[j] != [0, 0, 0]:
                         last_index = j
                         break
-                for j in range(i, last_index):
-                    rot[j] = [rot[j - 1][0] + ((rot[last_index][0] - rot[i - 1][0]) / (last_index - i + 1)),
-                              rot[j - 1][1] + ((rot[last_index][1] - rot[i - 1][1]) / (last_index - i + 1)),
-                              rot[j - 1][2] + ((rot[last_index][2] - rot[i - 1][2]) / (last_index - i + 1))]
-                    trans[j] = [trans[j - 1][0] + ((trans[last_index][0] - trans[i - 1][0]) / (last_index - i + 1)),
-                                trans[j - 1][1] + ((trans[last_index][1] - trans[i - 1][1]) / (last_index - i + 1)),
-                                trans[j - 1][2] + ((trans[last_index][2] - trans[i - 1][2]) / (last_index - i + 1))]
+                if 'last_index' in locals():
+                    for j in range(i, last_index):
+                        rot[j] = [rot[j - 1][0] + ((rot[last_index][0] - rot[i - 1][0]) / (last_index - i + 1)),
+                                  rot[j - 1][1] + ((rot[last_index][1] - rot[i - 1][1]) / (last_index - i + 1)),
+                                  rot[j - 1][2] + ((rot[last_index][2] - rot[i - 1][2]) / (last_index - i + 1))]
+                        trans[j] = [trans[j - 1][0] + ((trans[last_index][0] - trans[i - 1][0]) / (last_index - i + 1)),
+                                    trans[j - 1][1] + ((trans[last_index][1] - trans[i - 1][1]) / (last_index - i + 1)),
+                                    trans[j - 1][2] + ((trans[last_index][2] - trans[i - 1][2]) / (last_index - i + 1))]
 
         trans = np.asarray(trans)
         rot = np.asarray(rot)
@@ -200,6 +203,9 @@ class ErrFinder():
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
 
+        #min_x = 0
+        #min_y= 0
+
         for x in f_x:
             for y in f_y:
                 print 'Working on focus ' + str(x) + '_' + str(y)
@@ -243,11 +249,11 @@ class ErrFinder():
                     # print np.mean(err_sum)
                     print 'Min err at ' + str(x) + '_' + str(y)
                     self.min_err = np.linalg.norm(err_sum)
-                    min_x = x
-                    min_y = y
+                    self.min_x = x
+                    self.min_y = y
         plt.show()
 
-        return min_x, min_y
+        return self.min_x, self.min_y
 
     def main(self):
         # Find initial cam matrix
@@ -306,7 +312,7 @@ class ErrFinder():
         #vicon_data = vicon_data_board - vicon_data_cam
 
         # Determine improved position and rotation
-        trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, traiining = False)
+        trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
         self.draw_comparrisson(rot, trans, rot_1, trans_1, vicon_data, p_off)
 
     def save_data(self):
