@@ -3,8 +3,10 @@
 import numpy as np
 import math
 import cv2
+import cv2.cv as cv
 import csv
 import matplotlib.pyplot as plt
+import random
 
 class ErrFinder():
 
@@ -12,9 +14,15 @@ class ErrFinder():
         self.camdata = None
         self.errdata = None
         self.vicondata = None
+        
+        self.tr_n = 80
+        self.ts_n = 2400
+        
+        self.samples = random.sample(range(0, self.ts_n), self.tr_n)
 
+        self.min_err = 10000000
 
-    def estimate_pose(self, cam_matrix, distortion_matrix, T, training = True):
+    def estimate_pose(self, cam_matrix, distortion_matrix, n, training = True):
 
         search_size = (5, 4)
 
@@ -23,16 +31,23 @@ class ErrFinder():
         objp = np.zeros((search_size[0] * search_size[1], 3), np.float32)
         objp[:, :2] = np.mgrid[0:search_size[0], 0:search_size[1]].T.reshape(-1, 2)
 
-        if training:
-            cap = cv2.VideoCapture('videos/test.avi')
-        else:
-            cap = cv2.VideoCapture('videos/right_sd_test2.avi')
+        #if training:
+            #cap = cv2.VideoCapture('videos/test.avi')
+        #else:
+            #cap = cv2.VideoCapture('videos/right_sd_test2.avi')
+        cap = cv2.VideoCapture('videos/right_sd_test2.avi')
 
         trans = []
         rot = []
 
-        for i in range(T):
-            ret, frame = cap.read()
+        for i in range(n):
+
+            if training:
+                cap.set(cv.CV_CAP_PROP_POS_FRAMES, self.samples[i])
+                ret, frame = cap.read()
+            else:
+                ret, frame = cap.read()
+            #cv2.imshow('img', frame)
             grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             ret, corners = cv2.findChessboardCorners(grey, search_size, None)
@@ -60,13 +75,13 @@ class ErrFinder():
         cv2.destroyAllWindows()
 
         # Condition zero data points
-        for i in range(1, T-1):
+        for i in range(1, n-1):
             if rot[i] == [0, 0, 0] and rot[i + 1] != [0, 0, 0]:
                 rot[i] = [(rot[i-1][0] + rot[i + 1][0]) / 2, (rot[i-1][1] + rot[i + 1][1]) / 2, (rot[i-1][2] + rot[i + 1][2]) / 2]
                 trans[i] = [(trans[i-1][0] + trans[i + 1][0]) / 2, (trans[i-1][1] + trans[i + 1][1]) / 2, (trans[i-1][2] + trans[i + 1][2]) / 2]
 
             elif rot[i] == [0, 0, 0] and rot[i + 1] == [0, 0, 0]:
-                for j in range(i, T-1):
+                for j in range(i, n-1):
                     if rot[j] != [0, 0, 0]:
                         last_index = j
                         break
@@ -95,7 +110,7 @@ class ErrFinder():
 
         # Make cam coordinate system coincide with Vicon coordinate system
         temp_trans[:, 0] = trans[:, 0]
-        temp_trans[:, 1] = trans[:, 2]*1.5
+        temp_trans[:, 1] = trans[:, 2]#*1.5
         temp_trans[:, 2] = trans[:, 1]
 
         temp_rot[:, 0] = rot[:, 2]
@@ -104,7 +119,7 @@ class ErrFinder():
 
         return  temp_trans.T, temp_rot.T
 
-    def find_offset(self, trans, rot, vicon_data_board, T):
+    def find_offset(self, trans, rot, vicon_data_board):
 
         e_x = trans[0, :] - vicon_data_board[0, :]
         e_y = trans[1, :] - vicon_data_board[1, :]
@@ -121,10 +136,9 @@ class ErrFinder():
         e_pitch = e_pitch[~np.isnan(e_pitch)]
         e_yaw = e_yaw[~np.isnan(e_yaw)]
 
-
         return np.array([[np.mean(e_x), np.mean(e_y), np.mean(e_z), np.mean(e_roll), np.mean(e_pitch), np.mean(e_yaw)]]).T
 
-    def import_vicon_data(self, file, T, training = True):
+    def import_vicon_data(self, file_name, n):
         x = []
         y = []
         z = []
@@ -141,10 +155,10 @@ class ErrFinder():
         yaw_t = 0
 
         i = 0
-        if training:
-            i = 300
+        #if training:
+            #i = 300
 
-        csvfile = csv.reader(open(file, 'r'))
+        csvfile = csv.reader(open(file_name, 'r'))
 
         for row in csvfile:
             if not math.isnan(float(row[0])):
@@ -179,20 +193,20 @@ class ErrFinder():
 
         return_array = np.array([x, y, z, roll, pitch, yaw])
 
-        return return_array[:, i:T + i]
+        return return_array[:, i:n + i]
 
-    def find_err(self, vicon_data, p_off, cam_matrix, distortion_matrix, T):
+    def find_err(self, vicon_data, p_off, cam_matrix, distortion_matrix, n):
 
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
-        min_err = 10000000
+
         for x in f_x:
             for y in f_y:
                 print 'Working on focus ' + str(x) + '_' + str(y)
                 cam_matrix[0, 0] = x
                 cam_matrix[1, 1] = y
 
-                trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T)
+                trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.tr_n)
 
                 cam_data = np.concatenate((trans, rot), axis = 0)
 
@@ -225,10 +239,10 @@ class ErrFinder():
                 print 'Error:' + str(err_sum)
                 print 'Norm:' + str(np.linalg.norm(err_sum))
 
-                if np.linalg.norm(err_sum) < min_err:
+                if np.linalg.norm(err_sum) < self.min_err:
                     # print np.mean(err_sum)
                     print 'Min err at ' + str(x) + '_' + str(y)
-                    min_err = np.linalg.norm(err_sum)
+                    self.min_err = np.linalg.norm(err_sum)
                     min_x = x
                     min_y = y
         plt.show()
@@ -241,29 +255,41 @@ class ErrFinder():
         with np.load('calib_params/right_cam_calib_params.npz') as X:
                 _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
 
-        T = 300
 
         # Original
-        trans_1, rot_1 = self.estimate_pose(cam_matrix, distortion_matrix, 2400, training=False)
+        trans_1, rot_1 = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
         # cam_matrix[0, 0] = 1000
         # cam_matrix[1, 1] = 980
 
         # Read training Vicon data
-        vicon_data_board = self.import_vicon_data('vicon_data_board.csv', T)
-        vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', T)
+        vicon_data_board = self.import_vicon_data('vicon_data_board.csv', self.ts_n)
+        vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', self.ts_n)
         vicon_data = vicon_data_board - vicon_data_cam
+
+        #tr_vicon_data = np.zeros((6, 80))       # Choose 80 random samples, roughly 16 per DOF
+        #tr_vicon_data[0, :] = [vicon_data[0, i] for i in self.samples]
+        #tr_vicon_data[1, :] = [vicon_data[1, i] for i in self.samples]
+        #tr_vicon_data[2, :] = [vicon_data[2, i] for i in self.samples]
+        #tr_vicon_data[3, :] = [vicon_data[3, i] for i in self.samples]
+        #tr_vicon_data[4, :] = [vicon_data[4, i] for i in self.samples]
+        #tr_vicon_data[5, :] = [vicon_data[5, i] for i in self.samples]
+        
+        # Select 80 random data points from the Vicon data set
+        tr_vicon_data = np.asarray([[vicon_data[i, j] for j in self.samples] for i in range(6)])
+        #print test == tr_vicon_data
+        #print test, tr_vicon_data
 
         for i in range(6):
             # Step 1: Find pose with focus length f
-            trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T)
+            trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.tr_n)
 
             # Step 2 + 3: Determine avg error
-            p_off = self.find_offset(trans, rot, vicon_data, T)
+            p_off = self.find_offset(trans, rot, tr_vicon_data)
             # p_off = np.array([p_off]).T
             print 'p_off:' + str(p_off)
 
             # Step 4: Minimise err by varying focus length f
-            min_x, min_y = self.find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T)
+            min_x, min_y = self.find_err(tr_vicon_data, p_off, cam_matrix, distortion_matrix, self.tr_n)
 
             #Step 5: Adapt cam_matrix with new focal length and repeat
             cam_matrix[0, 0] = min_x
@@ -271,16 +297,16 @@ class ErrFinder():
 
             # Step 6: Save data to CSV file
             self.save_data()
-
+        plt.plot()
         print min_x, min_y
 
         # Read testing Vicon data
-        vicon_data_board = self.import_vicon_data('vicon_data_board.csv', 2400, training = False)
-        vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', 2400, training = False)
-        vicon_data = vicon_data_board - vicon_data_cam
+        #vicon_data_board = self.import_vicon_data('vicon_data_board.csv', 2400, training = False)
+        #vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', 2400, training = False)
+        #vicon_data = vicon_data_board - vicon_data_cam
 
         # Determine improved position and rotation
-        trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, 2400, training=False)
+        trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, traiining = False)
         self.draw_comparrisson(rot, trans, rot_1, trans_1, vicon_data, p_off)
 
     def save_data(self):
