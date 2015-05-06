@@ -5,7 +5,6 @@ import math
 import cv2
 import csv
 import matplotlib.pyplot as plt
-import random
 
 class ErrFinder():
 
@@ -13,19 +12,6 @@ class ErrFinder():
         self.camdata = None
         self.errdata = None
         self.vicondata = None
-        
-        tr_rot = np.zeros((3, 80))
-        tr_trans = np.zeros((3, 80))
-
-        self.samples = random.sample(range(0, 80), 80)
-
-        #tr_rot[0, :] = [temp_rot[i, 0] for i in samples]
-        #tr_rot[1, :] = [temp_rot[i, 1] for i in samples]
-        #tr_rot[2, :] = [temp_rot[i, 2] for i in samples]
-
-        #tr_trans[0, :] = [temp_trans[i, 0] for i in samples]
-        #tr_trans[1, :] = [temp_trans[i, 1] for i in samples]
-        #tr_trans[2, :] = [temp_trans[i, 2] for i in samples]
 
 
     def estimate_pose(self, cam_matrix, distortion_matrix, T, training = True):
@@ -115,29 +101,10 @@ class ErrFinder():
         temp_rot[:, 0] = rot[:, 2]
         temp_rot[:, 1] = rot[:, 1]
         temp_rot[:, 2] = rot[:, 0]
-        
-        if training:
-            tr_rot = np.zeros((3, 80))
-            tr_trans = np.zeros((3, 80))
-
-            #samples = random.sample(range(0, 80), 80)
-
-            tr_rot[0, :] = [temp_rot[i, 0] for i in self.samples]
-            tr_rot[1, :] = [temp_rot[i, 1] for i in self.samples]
-            tr_rot[2, :] = [temp_rot[i, 2] for i in self.samples]
-
-            tr_trans[0, :] = [temp_trans[i, 0] for i in self.samples]
-            tr_trans[1, :] = [temp_trans[i, 1] for i in self.samples]
-            tr_trans[2, :] = [temp_trans[i, 2] for i in self.samples]
-            #print tr_trans
-            #print tr_trans.shape
-
-            temp_trans = tr_trans.T
-            temp_rot = tr_rot.T
 
         return  temp_trans.T, temp_rot.T
 
-    def find_offset(self, trans, rot, vicon_data_board):
+    def find_offset(self, trans, rot, vicon_data_board, T):
 
         e_x = trans[0, :] - vicon_data_board[0, :]
         e_y = trans[1, :] - vicon_data_board[1, :]
@@ -219,40 +186,24 @@ class ErrFinder():
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
         min_err = 10000000
-
-        #l_err_x = np.array([])
-        #l_err_y = np.array([])
-        #l_err_z = np.array([])
-        #l_err_roll = np.array([])
-        #l_err_pitch = np.array([])
-        #l_err_yaw = np.array([])
-        l_err_x = []
-        l_err_y = []
-        l_err_z = []
-    
-        l_focusses = []
-
         for x in f_x:
             for y in f_y:
                 print 'Working on focus ' + str(x) + '_' + str(y)
                 cam_matrix[0, 0] = x
                 cam_matrix[1, 1] = y
-                l_focusses.append((x, y))
-                trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T, training = True)
+
+                trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T)
 
                 cam_data = np.concatenate((trans, rot), axis = 0)
-                print cam_data.shape
+
                 err = cam_data[:3, :] - vicon_data[:3, :] - p_off[:3, :]
 
                 # Scale the errors by dividing by their expected maxima
-                #err[0, :] = err[0, :] / 2000.0
-                #err[1, :] = err[1, :] / 5000.0
-                #err[2, :] = err[2, :] / 1000.0
-                l_err_x.append(err[0, :])
-                l_err_y.append(err[1, :])
-                l_err_z.append(err[2, :])
+                err[0, :] = err[0, :] / 2000.0
+                err[1, :] = err[1, :] / 5000.0
+                err[2, :] = err[2, :] / 1000.0
 
-                #err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
+                err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
 
                 if self.camdata == None:
                     self.camdata = cam_data
@@ -264,41 +215,22 @@ class ErrFinder():
                     self.vicondata = np.concatenate((self.vicondata, vicon_data), axis = 1)
                     self.errdata = np.concatenate((self.errdata, err), axis = 1)
 
-                #plt.plot(err[0, :], 'r')
-                #plt.plot(err[1, :], 'g')
-                #plt.plot(err[2, :], 'b')
+                plt.plot(err[0, :], 'r')
+                plt.plot(err[1, :], 'g')
+                plt.plot(err[2, :], 'b')
                 #plt.plot(err[3, :], 'c')
                 #plt.plot(err[4, :], 'm')
                 #plt.plot(err[5, :], 'k')
 
-                #print 'Error:' + str(err_sum)
-                #print 'Norm:' + str(np.linalg.norm(err_sum))
+                print 'Error:' + str(err_sum)
+                print 'Norm:' + str(np.linalg.norm(err_sum))
 
-        l_err_x = np.asarray(l_err_x)
-        l_err_y = np.asarray(l_err_y)
-        l_err_z = np.asarray(l_err_z)
-
-        l_err_x = l_err_x / float(l_err_x.max())
-        l_err_y = l_err_y / float(l_err_y.max())
-        l_err_z = l_err_z / float(l_err_z.max())
-
-        print 'l_err_x shape is ' + str(l_err_x.shape)
-        for i in range(len(l_focusses)):
-            err = np.concatenate((l_err_x, l_err_y, l_err_z), axis = 0)[:, i*T:i * T + T]
-            print err.shape
-            err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
-            if np.linalg.norm(err_sum) < min_err:
-                # print np.mean(err_sum)
-                print 'Min err at ' + str(l_focusses[i][0]) + '_' + str(l_focusses[i][1])
-                min_err = np.linalg.norm(err_sum)
-                min_x = l_focusses[i][0]
-                min_y = l_focusses[i][1]
-    
-        plt.plot(l_err_x)
-        plt.show()
-        plt.plot(l_err_y)
-        plt.show()
-        plt.plot(l_err_z)
+                if np.linalg.norm(err_sum) < min_err:
+                    # print np.mean(err_sum)
+                    print 'Min err at ' + str(x) + '_' + str(y)
+                    min_err = np.linalg.norm(err_sum)
+                    min_x = x
+                    min_y = y
         plt.show()
 
         return min_x, min_y
@@ -321,25 +253,17 @@ class ErrFinder():
         vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', T)
         vicon_data = vicon_data_board - vicon_data_cam
 
-        tr_vicon_data = np.zeros((6, 80))
-        tr_vicon_data[0, :] = [tr_vicon_data[0, i] for i in self.samples]
-        tr_vicon_data[1, :] = [tr_vicon_data[1, i] for i in self.samples]
-        tr_vicon_data[2, :] = [tr_vicon_data[2, i] for i in self.samples]
-        tr_vicon_data[3, :] = [tr_vicon_data[3, i] for i in self.samples]
-        tr_vicon_data[4, :] = [tr_vicon_data[4, i] for i in self.samples]
-        tr_vicon_data[5, :] = [tr_vicon_data[5, i] for i in self.samples]
-
         for i in range(6):
             # Step 1: Find pose with focus length f
-            trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T, training = True)
+            trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, T)
 
             # Step 2 + 3: Determine avg error
-            p_off = self.find_offset(trans, rot, tr_vicon_data)
+            p_off = self.find_offset(trans, rot, vicon_data, T)
             # p_off = np.array([p_off]).T
             print 'p_off:' + str(p_off)
 
             # Step 4: Minimise err by varying focus length f
-            min_x, min_y = self.find_err(tr_vicon_data, p_off, cam_matrix, distortion_matrix, T)
+            min_x, min_y = self.find_err(vicon_data, p_off, cam_matrix, distortion_matrix, T)
 
             #Step 5: Adapt cam_matrix with new focal length and repeat
             cam_matrix[0, 0] = min_x
