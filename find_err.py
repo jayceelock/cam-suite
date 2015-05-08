@@ -336,8 +336,8 @@ class ErrFinder():
         plt.title(titles[0])
         plt.show()
 
-        o_p, = plt.plot(o_trans[1, :]*1.5 - p_off[1]*1.5, 'r:')
-        i_p, = plt.plot(i_trans[1, :]*1.5 - p_off[1]*1.5, 'g--')
+        o_p, = plt.plot(o_trans[1, :] - p_off[1], 'r:')
+        i_p, = plt.plot(i_trans[1, :] - p_off[1], 'g--')
         v_p, = plt.plot(vicon_data[1, :], 'b_')
         plt.legend([o_p, i_p, v_p], ['Original', 'Improved', 'Vicon'])
         plt.title(titles[1])
