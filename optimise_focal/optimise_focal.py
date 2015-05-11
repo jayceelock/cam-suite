@@ -211,14 +211,14 @@ class ErrFinder():
 
                 cam_data = np.concatenate((trans, rot), axis = 0)
 
-                err = cam_data[:3, :] - vicon_data[:3, :] - p_off[:3, :]
+                err = cam_data - vicon_data - p_off
 
                 # Scale the errors by dividing by their expected maxima
                 err[0, :] = err[0, :] / 2000.0
                 err[1, :] = err[1, :] / 5000.0
                 err[2, :] = err[2, :] / 1000.0
 
-                err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
+                err_sum = np.sqrt(np.sum(err[:2, :] ** 2, axis = 1))
 
                 if self.camdata == None:
                     self.camdata = cam_data
