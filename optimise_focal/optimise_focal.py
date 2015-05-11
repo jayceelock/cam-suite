@@ -21,8 +21,8 @@ class ErrFinder():
         self.samples = random.sample(range(0, self.ts_n), self.tr_n)
 
         self.min_err = 10000000
-        self.min_x = 500
-        self.min_y = 500
+        self.min_x = 500.0
+        self.min_y = 500.0
 
     def estimate_pose(self, cam_matrix, distortion_matrix, n, training = True):
 
@@ -158,8 +158,6 @@ class ErrFinder():
         yaw_t = 0
 
         i = 0
-        #if training:
-            #i = 300
 
         csvfile = csv.reader(open(file_name, 'r'))
 
@@ -202,9 +200,6 @@ class ErrFinder():
 
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
-
-        #min_x = 0
-        #min_y= 0
 
         for x in f_x:
             for y in f_y:
@@ -264,22 +259,12 @@ class ErrFinder():
 
         # Original
         trans_1, rot_1 = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
-        # cam_matrix[0, 0] = 1000
-        # cam_matrix[1, 1] = 980
 
         # Read training Vicon data
-        vicon_data_board = self.import_vicon_data('vicon_data_board.csv', self.ts_n)
-        vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', self.ts_n)
+        vicon_data_board = self.import_vicon_data('../data/vicon_data/vicon_data_board.csv', self.ts_n)
+        vicon_data_cam = self.import_vicon_data('../data/vicon_data/vicon_data_cam.csv', self.ts_n)
         vicon_data = vicon_data_board - vicon_data_cam
 
-        #tr_vicon_data = np.zeros((6, 80))       # Choose 80 random samples, roughly 16 per DOF
-        #tr_vicon_data[0, :] = [vicon_data[0, i] for i in self.samples]
-        #tr_vicon_data[1, :] = [vicon_data[1, i] for i in self.samples]
-        #tr_vicon_data[2, :] = [vicon_data[2, i] for i in self.samples]
-        #tr_vicon_data[3, :] = [vicon_data[3, i] for i in self.samples]
-        #tr_vicon_data[4, :] = [vicon_data[4, i] for i in self.samples]
-        #tr_vicon_data[5, :] = [vicon_data[5, i] for i in self.samples]
-        
         # Select 80 random data points from the Vicon data set
         tr_vicon_data = np.asarray([[vicon_data[i, j] for j in self.samples] for i in range(6)])
         #print test == tr_vicon_data

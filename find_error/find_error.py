@@ -11,6 +11,7 @@ from subprocess import call
 class ErrorFinder:
 
     def __init__(self, f_x, f_y):
+
         self.start = True
         self.f_x = f_x
         self.f_y = f_y
@@ -44,7 +45,6 @@ class ErrorFinder:
         cv2.destroyAllWindows()
 
     def main(self):
-        print 'hey'
 
         with np.load('../calib_params/right_cam_calib_params.npz') as X:
             _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
