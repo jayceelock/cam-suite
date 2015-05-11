@@ -15,7 +15,7 @@ class ErrFinder():
         self.errdata = None
         self.vicondata = None
         
-        self.tr_n = 80
+        self.tr_n = 90
         self.ts_n = 2400
         
         self.samples = random.sample(range(0, self.ts_n), self.tr_n)
@@ -37,7 +37,7 @@ class ErrFinder():
             #cap = cv2.VideoCapture('videos/test.avi')
         #else:
             #cap = cv2.VideoCapture('videos/right_sd_test2.avi')
-        cap = cv2.VideoCapture('videos/right_sd_test2.avi')
+        cap = cv2.VideoCapture('../videos/right_sd_test2.avi')
 
         trans = []
         rot = []
@@ -235,9 +235,9 @@ class ErrFinder():
                     self.vicondata = np.concatenate((self.vicondata, vicon_data), axis = 1)
                     self.errdata = np.concatenate((self.errdata, err), axis = 1)
 
-                plt.plot(err[0, :], 'r')
-                plt.plot(err[1, :], 'g')
-                plt.plot(err[2, :], 'b')
+                #plt.plot(err[0, :], 'r')
+                #plt.plot(err[1, :], 'g')
+                #plt.plot(err[2, :], 'b')
                 #plt.plot(err[3, :], 'c')
                 #plt.plot(err[4, :], 'm')
                 #plt.plot(err[5, :], 'k')
@@ -251,14 +251,14 @@ class ErrFinder():
                     self.min_err = np.linalg.norm(err_sum)
                     self.min_x = x
                     self.min_y = y
-        plt.show()
+        #plt.show()
 
         return self.min_x, self.min_y
 
     def main(self):
         # Find initial cam matrix
 
-        with np.load('calib_params/right_cam_calib_params.npz') as X:
+        with np.load('../calib_params/right_cam_calib_params.npz') as X:
                 _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
 
 
