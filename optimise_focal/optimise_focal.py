@@ -265,10 +265,8 @@ class ErrFinder():
         vicon_data_cam = self.import_vicon_data('../data/vicon_data/vicon_data_cam.csv', self.ts_n)
         vicon_data = vicon_data_board - vicon_data_cam
 
-        # Select 80 random data points from the Vicon data set
+        # Select tr_n random data points from the Vicon data set and ensure they are normally distributed
         tr_vicon_data = np.asarray([[vicon_data[i, j] for j in self.samples] for i in range(6)])
-        #print test == tr_vicon_data
-        #print test, tr_vicon_data
 
         for i in range(6):
             # Step 1: Find pose with focus length f
