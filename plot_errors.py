@@ -78,6 +78,31 @@ class ErrorPlotter():
         plt.title('Yaw')
         plt.show()
 
+    def plot_err_convergence(self):
+
+        dim = []
+        for i in range(self.pitch.shape[1] / 90 - 90):
+            dim.append(self.z[:, i * 90: i * 90 + 90])
+        dim = np.asarray(dim)
+
+        dim = dim.reshape((636, 90))
+
+        avgs = dim.mean(axis = 1).reshape((636, 1))
+        mem = np.zeros((6, 1))
+        mem[0, 0] = avgs[0:106, :].mean()
+        mem[1, 0] = avgs[106:212, :].mean()
+        mem[2, 0] = avgs[212:318, :].mean()
+        mem[3, 0] = avgs[318:424, :].mean()
+        mem[4, 0] = avgs[424:530, :].mean()
+        mem[5, 0] = avgs[530:, :].mean()
+
+        plt.plot(mem)
+        plt.show()
+        print mem
+        #print avgs
+        #plt.plot(avgs)
+        #plt.show()
+
     def is_norm_dist(self):
         
         chi, p = stats.normaltest(self.x)
@@ -97,7 +122,9 @@ class ErrorPlotter():
         err_mat = np.concatenate((err_mat, self.pitch))
         err_mat = np.concatenate((err_mat, self.yaw))
 
-        print np.cov(err_mat)
+        self.plot_err_convergence()
+
+        #print np.cov(err_mat)
         #self.plot_hist()
 
 if __name__ == '__main__':
