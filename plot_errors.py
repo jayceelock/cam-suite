@@ -1,128 +1,133 @@
+#!/usr/bin/python
+
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 
-v_x = []
-v_y = []
-v_z = []
-v_roll = []
-v_pitch = []
-v_yaw = []
+class ErrorPlotter():
 
-index = 0
-v_x_t = 0
-v_y_t = 0
-v_z_t = 0
-v_roll_t = 0
-v_pitch_t = 0
-v_yaw_t = 0
-
-csvfile = csv.reader(open('vicon_data.csv', 'r'))
-
-for row in csvfile:
-    v_x_t = v_x_t + float(row[0])
-    v_y_t = v_y_t + float(row[1])
-    v_z_t = v_z_t + float(row[2])
-    v_roll_t = v_roll_t + float(row[3])
-    v_pitch_t = v_pitch_t + float(row[4])
-    v_yaw_t = v_yaw_t + float(row[5])
-
-    index += 1
-
-    if index == 10:
-        v_x.append(v_x_t / 10.0)
-        v_y.append(v_y_t / 10.0)
-        v_z.append(v_z_t / 10.0)
-        v_roll.append(v_roll_t / 10.0)
-        v_pitch.append(v_pitch_t / 10.0)
-        v_yaw.append(v_yaw_t / 10.0)
-
-        index = 0
-        v_x_t = 0
-        v_y_t = 0
-        v_z_t = 0
-        v_roll_t = 0
-        v_pitch_t = 0
-        v_yaw_t = 0
-
-c_x = []
-c_y = []
-c_z = []
-c_roll = []
-c_pitch = []
-c_yaw = []
-
-csvfile = csv.reader(open('data/no_epnp_sd_test2.csv', 'r'))
-
-<<<<<<< HEAD
-for row in csvfile:
-    c_x.append(float(row[3]))
-    c_y.append(float(row[4]))
-    c_z.append(float(row[5]))
-    c_roll.append(float(row[0]))
-    c_pitch.append(float(row[1]))
-    c_yaw.append(float(row[2]))
-=======
     def __init__(self):
 
         self.err_file = 'optimise_focal/errfile.csv'
 
-        self.x = []
-        self.y = []
-        self.z = []
-        self.roll = []
-        self.pitch = []
-        self.yaw = []
->>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
+        self.err_data = []
 
-c_x = [c_x[i]*-10 + 0 for i in range(0, len(c_x))]
-c_y = [c_y[i]*-10 + 711 for i in range(0, len(c_x))]    #711
-c_z = [c_z[i]*-10 + 2950 for i in range(0, len(c_x))]   #2950
+    def read_error_file(self):
 
-<<<<<<< HEAD
-c_pitch = [c_pitch[i]*-1 + 88 for i in range(0, len(c_x))]
-c_yaw = [c_yaw[i] - 90 if c_yaw[i] > 0 else c_yaw[i] + 90 for i in range(0, len(c_x)) ]
-#c_yaw = [c_yaw[i] * 1 for i in range(len(c_x))]
-=======
         csv_reader = csv.reader(open(self.err_file, 'r'))       
         
         for row in csv_reader:
-            print type(row)
-            print len(row)
-            for elem in row:
-                print row
+            self.err_data.append(row)
+
+        self.x = np.asarray([[float(self.err_data[0][i]) for i in range(len(self.err_data[0]))]]) * 2000.0
+        self.y = np.asarray([[float(self.err_data[1][i]) for i in range(len(self.err_data[1]))]]) * 5000.0
+        self.z = np.asarray([[float(self.err_data[2][i]) for i in range(len(self.err_data[2]))]]) * 1000.0
+        self.roll = np.asarray([[float(self.err_data[3][i]) for i in range(len(self.err_data[3]))]])
+        self.pitch = np.asarray([[float(self.err_data[4][i]) for i in range(len(self.err_data[4]))]])
+        self.yaw = np.asarray([[float(self.err_data[5][i]) for i in range(len(self.err_data[5]))]])
+        
+    
+    def plot_hist(self):
+
+        freq, bins = np.histogram(self.x, bins = 100)
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.bar(center, freq, align='center', width=width)
+        plt.title('x')
+        plt.show()
+
+        freq, bins = np.histogram(self.y, bins = 100)
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.bar(center, freq, align='center', width=width)
+        plt.title('y')
+        plt.show()
+
+        freq, bins = np.histogram(self.z, bins = 100)
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.bar(center, freq, align='center', width=width)
+        plt.title('z')
+        plt.show()
+
+        freq, bins = np.histogram(self.roll, bins = 100)
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.bar(center, freq, align='center', width=width)
+        plt.title('Roll')
+        plt.show()
+
+        freq, bins = np.histogram(self.pitch, bins = 100)
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.bar(center, freq, align='center', width=width)
+        plt.title('Pitch')
+        plt.show()
+
+        freq, bins = np.histogram(self.yaw, bins = 100)
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.bar(center, freq, align='center', width=width)
+        plt.title('Yaw')
+        plt.show()
+
+    def plot_err_convergence(self):
+
+        dim = []
+        for i in range(self.pitch.shape[1] / 90 - 90):
+            dim.append(self.z[:, i * 90: i * 90 + 90])
+        dim = np.asarray(dim)
+
+        dim = dim.reshape((636, 90))
+
+        avgs = dim.mean(axis = 1).reshape((636, 1))
+        mem = np.zeros((6, 1))
+        mem[0, 0] = avgs[0:106, :].mean()
+        mem[1, 0] = avgs[106:212, :].mean()
+        mem[2, 0] = avgs[212:318, :].mean()
+        mem[3, 0] = avgs[318:424, :].mean()
+        mem[4, 0] = avgs[424:530, :].mean()
+        mem[5, 0] = avgs[530:, :].mean()
+
+        plt.plot(mem)
+        plt.show()
+        print mem
+        #print avgs
+        #plt.plot(avgs)
+        #plt.show()
+
+    def is_norm_dist(self):
+        
+        chi, p = stats.normaltest(self.x)
+        print chi, p
 
 
->>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
+    def main(self):
 
-e_x = np.asarray(v_x[:2641]) - np.asarray(c_x)
-e_x = e_x[~np.isnan(e_x)]
-e_y = np.asarray(v_y[:2641]) - np.asarray(c_z)
-e_y = e_y[~np.isnan(e_y)]
-e_z = np.asarray(v_z[:2641]) - np.asarray(c_y)
-e_z = e_z[~np.isnan(e_z)]
+        print 'main'
 
-e_roll = np.asarray(v_roll[:2641]) - np.asarray(c_yaw)
-e_roll = e_roll[~np.isnan(e_roll)]
-e_pitch = np.asarray(v_pitch[:2641]) - np.asarray(c_pitch)
-e_pitch = e_pitch[~np.isnan(e_pitch)]
-e_yaw = np.asarray(v_yaw[:2641]) - np.asarray(c_roll)
-e_yaw = e_yaw[~np.isnan(e_yaw)]
+        self.read_error_file()
+        #self.is_norm_dist()
 
-# p_x, = plt.plot(e_x)
-# p_y, = plt.plot(e_y)
-# p_z, = plt.plot(e_z)
-# plt.legend([p_x, p_y, p_z], ['X', 'Y', 'Z'])
-# plt.show()
-#
-# p_roll, = plt.plot(e_roll)
-# p_pitch, = plt.plot(e_pitch)
-# p_yaw, = plt.plot(e_yaw)
-# plt.legend([p_roll, p_pitch, p_yaw], ['Roll', 'Pitch', 'Yaw'])
-# plt.show()
+        err_mat = np.concatenate((self.x, self.y))
+        err_mat = np.concatenate((err_mat, self.z))
+        err_mat = np.concatenate((err_mat, self.roll))
+        err_mat = np.concatenate((err_mat, self.pitch))
+        err_mat = np.concatenate((err_mat, self.yaw))
 
-p_off = np.array([np.mean(e_x), np.mean(e_y), np.mean(e_z), np.mean(e_roll), np.mean(e_pitch), np.mean(e_yaw)]).T
-print p_off
+        self.plot_err_convergence()
 
-p_err_x = e_x - p_off[0]
-print p_err_x
+        #print np.cov(err_mat)
+        #self.plot_hist()
+
+if __name__ == '__main__':
+
+    ep = ErrorPlotter()
+    ep.main()

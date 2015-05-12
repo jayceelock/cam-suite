@@ -15,14 +15,14 @@ class ErrFinder():
         self.errdata = None
         self.vicondata = None
         
-        self.tr_n = 80
+        self.tr_n = 90
         self.ts_n = 2400
         
         self.samples = random.sample(range(0, self.ts_n), self.tr_n)
 
         self.min_err = 10000000
-        self.min_x = 500
-        self.min_y = 500
+        self.min_x = 500.0
+        self.min_y = 500.0
 
     def estimate_pose(self, cam_matrix, distortion_matrix, n, training = True):
 
@@ -37,7 +37,7 @@ class ErrFinder():
             #cap = cv2.VideoCapture('videos/test.avi')
         #else:
             #cap = cv2.VideoCapture('videos/right_sd_test2.avi')
-        cap = cv2.VideoCapture('videos/right_sd_test2.avi')
+        cap = cv2.VideoCapture('../videos/right_sd_test2.avi')
 
         trans = []
         rot = []
@@ -158,8 +158,6 @@ class ErrFinder():
         yaw_t = 0
 
         i = 0
-        #if training:
-            #i = 300
 
         csvfile = csv.reader(open(file_name, 'r'))
 
@@ -203,9 +201,6 @@ class ErrFinder():
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
 
-        #min_x = 0
-        #min_y= 0
-
         for x in f_x:
             for y in f_y:
                 print 'Working on focus ' + str(x) + '_' + str(y)
@@ -216,23 +211,14 @@ class ErrFinder():
 
                 cam_data = np.concatenate((trans, rot), axis = 0)
 
-<<<<<<< HEAD
-                err = cam_data[:3, :] - vicon_data[:3, :] - p_off[:3, :]
-
-=======
                 err = cam_data - vicon_data - p_off
-                #print err.shape
->>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
+
                 # Scale the errors by dividing by their expected maxima
                 err[0, :] = err[0, :] / 2000.0
                 err[1, :] = err[1, :] / 5000.0
                 err[2, :] = err[2, :] / 1000.0
 
-<<<<<<< HEAD
-                err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
-=======
                 err_sum = np.sqrt(np.sum(err[:3, :] ** 2, axis = 1))
->>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
 
                 if self.camdata == None:
                     self.camdata = cam_data
@@ -244,9 +230,9 @@ class ErrFinder():
                     self.vicondata = np.concatenate((self.vicondata, vicon_data), axis = 1)
                     self.errdata = np.concatenate((self.errdata, err), axis = 1)
 
-                plt.plot(err[0, :], 'r')
-                plt.plot(err[1, :], 'g')
-                plt.plot(err[2, :], 'b')
+                #plt.plot(err[0, :], 'r')
+                #plt.plot(err[1, :], 'g')
+                #plt.plot(err[2, :], 'b')
                 #plt.plot(err[3, :], 'c')
                 #plt.plot(err[4, :], 'm')
                 #plt.plot(err[5, :], 'k')
@@ -260,39 +246,27 @@ class ErrFinder():
                     self.min_err = np.linalg.norm(err_sum)
                     self.min_x = x
                     self.min_y = y
-        plt.show()
+        #plt.show()
 
         return self.min_x, self.min_y
 
     def main(self):
         # Find initial cam matrix
 
-        with np.load('calib_params/right_cam_calib_params.npz') as X:
+        with np.load('../calib_params/right_cam_calib_params.npz') as X:
                 _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
 
 
         # Original
         trans_1, rot_1 = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
-        # cam_matrix[0, 0] = 1000
-        # cam_matrix[1, 1] = 980
 
         # Read training Vicon data
-        vicon_data_board = self.import_vicon_data('vicon_data_board.csv', self.ts_n)
-        vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', self.ts_n)
+        vicon_data_board = self.import_vicon_data('../data/vicon_data/vicon_data_board.csv', self.ts_n)
+        vicon_data_cam = self.import_vicon_data('../data/vicon_data/vicon_data_cam.csv', self.ts_n)
         vicon_data = vicon_data_board - vicon_data_cam
 
-        #tr_vicon_data = np.zeros((6, 80))       # Choose 80 random samples, roughly 16 per DOF
-        #tr_vicon_data[0, :] = [vicon_data[0, i] for i in self.samples]
-        #tr_vicon_data[1, :] = [vicon_data[1, i] for i in self.samples]
-        #tr_vicon_data[2, :] = [vicon_data[2, i] for i in self.samples]
-        #tr_vicon_data[3, :] = [vicon_data[3, i] for i in self.samples]
-        #tr_vicon_data[4, :] = [vicon_data[4, i] for i in self.samples]
-        #tr_vicon_data[5, :] = [vicon_data[5, i] for i in self.samples]
-        
-        # Select 80 random data points from the Vicon data set
+        # Select tr_n random data points from the Vicon data set and ensure they are normally distributed
         tr_vicon_data = np.asarray([[vicon_data[i, j] for j in self.samples] for i in range(6)])
-        #print test == tr_vicon_data
-        #print test, tr_vicon_data
 
         for i in range(6):
             # Step 1: Find pose with focus length f
