@@ -216,14 +216,23 @@ class ErrFinder():
 
                 cam_data = np.concatenate((trans, rot), axis = 0)
 
+<<<<<<< HEAD
                 err = cam_data[:3, :] - vicon_data[:3, :] - p_off[:3, :]
 
+=======
+                err = cam_data - vicon_data - p_off
+                #print err.shape
+>>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
                 # Scale the errors by dividing by their expected maxima
                 err[0, :] = err[0, :] / 2000.0
                 err[1, :] = err[1, :] / 5000.0
                 err[2, :] = err[2, :] / 1000.0
 
+<<<<<<< HEAD
                 err_sum = np.sqrt(np.sum(err ** 2, axis = 1))
+=======
+                err_sum = np.sqrt(np.sum(err[:3, :] ** 2, axis = 1))
+>>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
 
                 if self.camdata == None:
                     self.camdata = cam_data
@@ -303,13 +312,8 @@ class ErrFinder():
 
             # Step 6: Save data to CSV file
             self.save_data()
-        plt.plot()
+        #plt.plot()
         print min_x, min_y
-
-        # Read testing Vicon data
-        #vicon_data_board = self.import_vicon_data('vicon_data_board.csv', 2400, training = False)
-        #vicon_data_cam = self.import_vicon_data('vicon_data_cam.csv', 2400, training = False)
-        #vicon_data = vicon_data_board - vicon_data_cam
 
         # Determine improved position and rotation
         trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
@@ -320,7 +324,7 @@ class ErrFinder():
         viconfile = csv.writer(open('viconfile.csv', 'w'))
         errfile = csv.writer(open('errfile.csv', 'w'))
 
-        for j in range(3):
+        for j in range(6):
             camfile.writerow(self.camdata[j, :])
             viconfile.writerow(self.vicondata[j, :])
             errfile.writerow(self.errdata[j, :])
@@ -336,8 +340,8 @@ class ErrFinder():
         plt.title(titles[0])
         plt.show()
 
-        o_p, = plt.plot(o_trans[1, :] - p_off[1], 'r:')
-        i_p, = plt.plot(i_trans[1, :] - p_off[1], 'g--')
+        o_p, = plt.plot(o_trans[1, :] * 8 - p_off[1] * 8, 'r:')
+        i_p, = plt.plot(i_trans[1, :] * 5 - p_off[1] * 5, 'g--')
         v_p, = plt.plot(vicon_data[1, :], 'b_')
         plt.legend([o_p, i_p, v_p], ['Original', 'Improved', 'Vicon'])
         plt.title(titles[1])

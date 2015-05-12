@@ -54,6 +54,7 @@ c_yaw = []
 
 csvfile = csv.reader(open('data/no_epnp_sd_test2.csv', 'r'))
 
+<<<<<<< HEAD
 for row in csvfile:
     c_x.append(float(row[3]))
     c_y.append(float(row[4]))
@@ -61,14 +62,38 @@ for row in csvfile:
     c_roll.append(float(row[0]))
     c_pitch.append(float(row[1]))
     c_yaw.append(float(row[2]))
+=======
+    def __init__(self):
+
+        self.err_file = 'optimise_focal/errfile.csv'
+
+        self.x = []
+        self.y = []
+        self.z = []
+        self.roll = []
+        self.pitch = []
+        self.yaw = []
+>>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
 
 c_x = [c_x[i]*-10 + 0 for i in range(0, len(c_x))]
 c_y = [c_y[i]*-10 + 711 for i in range(0, len(c_x))]    #711
 c_z = [c_z[i]*-10 + 2950 for i in range(0, len(c_x))]   #2950
 
+<<<<<<< HEAD
 c_pitch = [c_pitch[i]*-1 + 88 for i in range(0, len(c_x))]
 c_yaw = [c_yaw[i] - 90 if c_yaw[i] > 0 else c_yaw[i] + 90 for i in range(0, len(c_x)) ]
 #c_yaw = [c_yaw[i] * 1 for i in range(len(c_x))]
+=======
+        csv_reader = csv.reader(open(self.err_file, 'r'))       
+        
+        for row in csv_reader:
+            print type(row)
+            print len(row)
+            for elem in row:
+                print row
+
+
+>>>>>>> 0ad5cf9... Addingt o error_plotter and optim iser
 
 e_x = np.asarray(v_x[:2641]) - np.asarray(c_x)
 e_x = e_x[~np.isnan(e_x)]
