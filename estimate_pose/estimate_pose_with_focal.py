@@ -195,55 +195,36 @@ class pose_estimator():
 
         return np.array([[np.mean(e_x), np.mean(e_y), np.mean(e_z), np.mean(e_roll), np.mean(e_pitch), np.mean(e_yaw)]]).T
 
+    def plot(self, data, tit):
+
+        freq, bins = np.histogram(data, bins = 100)
+
+        std = np.std(data)
+        dist_range = np.arange(bins[0], bins[-1], 0.1)
+        dist = stats.norm.pdf(dist_range, 0, std)
+
+        plt.plot(dist_range, dist / float(max(dist)))
+
+        width = 0.7 * (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+
+        print freq
+        print std
+        print freq < std
+
+        plt.bar(center, freq / float(max(freq[len(freq) / 3:len(freq) / 3 * 2])), align='center', width=width)
+        plt.title(tit)
+
+        plt.show()
+
     def plot_hist(self, data):
 
-        freq, bins = np.histogram(data[0, :], bins = 100)
-
-        width = 0.7 * (bins[1] - bins[0])
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, freq, align='center', width=width)
-        plt.title('x')
-        plt.show()
-
-        freq, bins = np.histogram(data[1, :], bins = 100)
-
-        width = 0.7 * (bins[1] - bins[0])
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, freq, align='center', width=width)
-        plt.title('y')
-        plt.show()
-
-        freq, bins = np.histogram(data[2, :], bins = 100)
-
-        width = 0.7 * (bins[1] - bins[0])
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, freq, align='center', width=width)
-        plt.title('z')
-        plt.show()
-
-        freq, bins = np.histogram(data[3, :], bins = 100)
-
-        width = 0.7 * (bins[1] - bins[0])
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, freq, align='center', width=width)
-        plt.title('roll')
-        plt.show()
-
-        freq, bins = np.histogram(data[4, :], bins = 100)
-
-        width = 0.7 * (bins[1] - bins[0])
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, freq, align='center', width=width)
-        plt.title('pitch')
-        plt.show()
-
-        freq, bins = np.histogram(data[5, :], bins = 100)
-
-        width = 0.7 * (bins[1] - bins[0])
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.bar(center, freq, align='center', width=width)
-        plt.title('yaw')
-        plt.show()
+        self.plot(data[0, :], 'x')
+        self.plot(data[1, :], 'y')
+        self.plot(data[2, :], 'z')
+        self.plot(data[3, :], 'roll')
+        self.plot(data[4, :], 'pitch')
+        self.plot(data[5, :], 'yaw')
 
     def is_normal(self, data):
 
@@ -262,7 +243,7 @@ class pose_estimator():
 
     def cov(self, data):
 
-        print np.cov(data)
+        print np.sqrt(np.fabs(np.cov(data)))
 
     def main(self):
 
@@ -275,7 +256,8 @@ class pose_estimator():
         p_off = self.find_offset(trans, rot, vicon_data)
 
         err = np.concatenate((trans, rot)) - vicon_data - p_off
-        #self.plot_hist(err)
+
+        self.plot_hist(err)
         self.save_to_csv(err)
         self.is_normal(err)
         self.cov(err)

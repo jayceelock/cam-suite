@@ -33,10 +33,6 @@ class ErrFinder():
         objp = np.zeros((search_size[0] * search_size[1], 3), np.float32)
         objp[:, :2] = np.mgrid[0:search_size[0], 0:search_size[1]].T.reshape(-1, 2)
 
-        #if training:
-            #cap = cv2.VideoCapture('videos/test.avi')
-        #else:
-            #cap = cv2.VideoCapture('videos/right_sd_test2.avi')
         cap = cv2.VideoCapture('../videos/right_sd_test2.avi')
 
         trans = []
@@ -201,6 +197,8 @@ class ErrFinder():
         f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
         f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
 
+        min_err_sum = 0
+
         for x in f_x:
             for y in f_y:
                 print 'Working on focus ' + str(x) + '_' + str(y)
@@ -212,7 +210,7 @@ class ErrFinder():
                 cam_data = np.concatenate((trans, rot), axis = 0)
 
                 err = cam_data - vicon_data - p_off
-                #print err.shape
+                
                 # Scale the errors by dividing by their expected maxima
                 err[0, :] = err[0, :] / 2000.0
                 err[1, :] = err[1, :] / 5000.0
@@ -230,25 +228,17 @@ class ErrFinder():
                     self.vicondata = np.concatenate((self.vicondata, vicon_data), axis = 1)
                     self.errdata = np.concatenate((self.errdata, err), axis = 1)
 
-                #plt.plot(err[0, :], 'r')
-                #plt.plot(err[1, :], 'g')
-                #plt.plot(err[2, :], 'b')
-                #plt.plot(err[3, :], 'c')
-                #plt.plot(err[4, :], 'm')
-                #plt.plot(err[5, :], 'k')
-
                 print 'Error:' + str(err_sum)
                 print 'Norm:' + str(np.linalg.norm(err_sum))
 
                 if np.linalg.norm(err_sum) < self.min_err:
-                    # print np.mean(err_sum)
                     print 'Min err at ' + str(x) + '_' + str(y)
                     self.min_err = np.linalg.norm(err_sum)
+                    min_err_sum = np.linalg.norm(err_sum)
                     self.min_x = x
                     self.min_y = y
-        #plt.show()
 
-        return self.min_x, self.min_y
+        return self.min_x, self.min_y, min_err_sum
 
     def main(self):
         # Find initial cam matrix
@@ -268,17 +258,22 @@ class ErrFinder():
         # Select tr_n random data points from the Vicon data set and ensure they are normally distributed
         tr_vicon_data = np.asarray([[vicon_data[i, j] for j in self.samples] for i in range(6)])
 
-        for i in range(6):
+        e_t = []
+
+        for i in range(50):
             # Step 1: Find pose with focus length f
             trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.tr_n)
 
             # Step 2 + 3: Determine avg error
             p_off = self.find_offset(trans, rot, tr_vicon_data)
-            # p_off = np.array([p_off]).T
             print 'p_off:' + str(p_off)
+            cam = np.concatenate((trans, rot), axis = 0)
+            off_err = cam - tr_vicon_data - p_off
+            e_t.append(off_err)
 
             # Step 4: Minimise err by varying focus length f
-            min_x, min_y = self.find_err(tr_vicon_data, p_off, cam_matrix, distortion_matrix, self.tr_n)
+            min_x, min_y, focus_err = self.find_err(tr_vicon_data, p_off, cam_matrix, distortion_matrix, self.tr_n)
+            e_t.append(focus_err)
 
             #Step 5: Adapt cam_matrix with new focal length and repeat
             cam_matrix[0, 0] = min_x
@@ -286,7 +281,6 @@ class ErrFinder():
 
             # Step 6: Save data to CSV file
             self.save_data()
-        #plt.plot()
         print min_x, min_y
 
         # Determine improved position and rotation

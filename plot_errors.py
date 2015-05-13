@@ -82,19 +82,24 @@ class ErrorPlotter():
 
         dim = []
         for i in range(self.pitch.shape[1] / 90 - 90):
-            dim.append(self.z[:, i * 90: i * 90 + 90])
+            dim.append(self.yaw[:, i * 90: i * 90 + 90])
         dim = np.asarray(dim)
+        print dim.shape
 
-        dim = dim.reshape((636, 90))
+        dim = dim.reshape((dim.shape[0], 90))
 
-        avgs = dim.mean(axis = 1).reshape((636, 1))
-        mem = np.zeros((6, 1))
-        mem[0, 0] = avgs[0:106, :].mean()
-        mem[1, 0] = avgs[106:212, :].mean()
-        mem[2, 0] = avgs[212:318, :].mean()
-        mem[3, 0] = avgs[318:424, :].mean()
-        mem[4, 0] = avgs[424:530, :].mean()
-        mem[5, 0] = avgs[530:, :].mean()
+        avgs = dim.mean(axis = 1).reshape((dim.shape[0], 1))
+        mem = np.zeros((50, 1))
+
+        interval = dim.shape[0] / 50
+        for i in range(50):
+            mem[i, 0] = avgs[i * interval:i * interval + interval].mean()
+        #mem[0, 0] = avgs[0:106, :].mean()
+        #mem[1, 0] = avgs[106:212, :].mean()
+        #mem[2, 0] = avgs[212:318, :].mean()
+        #mem[3, 0] = avgs[318:424, :].mean()
+        #mem[4, 0] = avgs[424:530, :].mean()
+        #mem[5, 0] = avgs[530:, :].mean()
 
         plt.plot(mem)
         plt.show()
