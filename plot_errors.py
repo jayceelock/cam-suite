@@ -94,19 +94,10 @@ class ErrorPlotter():
         interval = dim.shape[0] / 50
         for i in range(50):
             mem[i, 0] = avgs[i * interval:i * interval + interval].mean()
-        #mem[0, 0] = avgs[0:106, :].mean()
-        #mem[1, 0] = avgs[106:212, :].mean()
-        #mem[2, 0] = avgs[212:318, :].mean()
-        #mem[3, 0] = avgs[318:424, :].mean()
-        #mem[4, 0] = avgs[424:530, :].mean()
-        #mem[5, 0] = avgs[530:, :].mean()
 
         plt.plot(mem)
         plt.show()
         print mem
-        #print avgs
-        #plt.plot(avgs)
-        #plt.show()
 
     def is_norm_dist(self):
         
@@ -127,9 +118,9 @@ class ErrorPlotter():
         err_mat = np.concatenate((err_mat, self.pitch))
         err_mat = np.concatenate((err_mat, self.yaw))
 
-        self.plot_err_convergence()
+        #self.plot_err_convergence()
 
-        #print np.cov(err_mat)
+        print np.cov(err_mat)
         #self.plot_hist()
 
 if __name__ == '__main__':

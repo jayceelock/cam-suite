@@ -212,7 +212,7 @@ class pose_estimator():
         print std
         print freq < std
 
-        plt.bar(center, freq / float(max(freq[len(freq) / 3:len(freq) / 3 * 2])), align='center', width=width)
+        plt.bar(center, freq / float(max(freq[len(freq) / 4:len(freq) / 4 * 3])), align='center', width=width)
         plt.title(tit)
 
         plt.show()
@@ -243,7 +243,8 @@ class pose_estimator():
 
     def cov(self, data):
 
-        print np.sqrt(np.fabs(np.cov(data)))
+        #print np.sqrt(np.fabs(np.cov(data)))
+        print np.cov(data)
 
     def main(self):
 
@@ -258,9 +259,9 @@ class pose_estimator():
         err = np.concatenate((trans, rot)) - vicon_data - p_off
 
         self.plot_hist(err)
-        self.save_to_csv(err)
-        self.is_normal(err)
-        self.cov(err)
+        #self.save_to_csv(err)
+        #self.is_normal(err)
+        #self.cov(err)
 
 if __name__ == '__main__':
 

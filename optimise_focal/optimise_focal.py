@@ -52,7 +52,10 @@ class ErrFinder():
 
             if ret:
                 cv2.cornerSubPix(grey, corners, (11, 11), (-1, -1), criteria)
-                rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix)
+                if n == 0:  
+                    rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix, rvec=rvecs, tvec=tvecs, useExtrinsicGuess=True)
+                else:
+                    rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix)
                 # imgpts, jacobian = cv2.projectPoints(axis, rvecs, tvecs, cam_matrix, distortion_matrix)
 
                 # frame = draw(frame, corners, imgpts)
@@ -260,7 +263,7 @@ class ErrFinder():
 
         e_t = []
 
-        for i in range(50):
+        for i in range(6):
             # Step 1: Find pose with focus length f
             trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.tr_n)
 
@@ -269,11 +272,11 @@ class ErrFinder():
             print 'p_off:' + str(p_off)
             cam = np.concatenate((trans, rot), axis = 0)
             off_err = cam - tr_vicon_data - p_off
-            e_t.append(off_err)
+            #e_t.append(off_err)
 
             # Step 4: Minimise err by varying focus length f
             min_x, min_y, focus_err = self.find_err(tr_vicon_data, p_off, cam_matrix, distortion_matrix, self.tr_n)
-            e_t.append(focus_err)
+            #e_t.append(focus_err)
 
             #Step 5: Adapt cam_matrix with new focal length and repeat
             cam_matrix[0, 0] = min_x
@@ -282,6 +285,11 @@ class ErrFinder():
             # Step 6: Save data to CSV file
             self.save_data()
         print min_x, min_y
+
+        # Save convergence data
+        #convergencef = csv.writer(open('convergence.csv', 'w'))
+
+        #convergencef.writerow(focus_err)
 
         # Determine improved position and rotation
         trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
