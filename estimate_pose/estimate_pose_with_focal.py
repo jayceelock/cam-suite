@@ -81,7 +81,7 @@ class pose_estimator():
 
         trans[:, 0] = [trans[:, 0][i]*-10  + 0 for i in range(0, len(trans[:, 0]))]
         trans[:, 1] = [trans[:, 1][i]*-10  + 0 for i in range(0, len(trans[:, 1]))]
-        trans[:, 2] = [trans[:, 2][i]*-1  + 0 for i in range(0, len(trans[:, 2]))]
+        trans[:, 2] = [trans[:, 2][i]*-10  + 0 for i in range(0, len(trans[:, 2]))]
 
         rot[:, 0] = [rot[:, 0][i] - 0 for i in range(0, len(rot[:, 0]))]
         rot[:, 1] = [rot[:, 1][i]*-1 for i in range(0, len(rot[:, 1]))]
@@ -208,10 +208,6 @@ class pose_estimator():
         width = 0.7 * (bins[1] - bins[0])
         center = (bins[:-1] + bins[1:]) / 2
 
-        print freq
-        print std
-        print freq < std
-
         plt.bar(center, freq / float(max(freq[len(freq) / 4:len(freq) / 4 * 3])), align='center', width=width)
         plt.title(tit)
 
@@ -243,8 +239,8 @@ class pose_estimator():
 
     def cov(self, data):
 
-        #print np.sqrt(np.fabs(np.cov(data)))
-        print np.cov(data)
+        print np.sqrt(np.fabs(np.cov(data)))
+        #print np.cov(data)
 
     def main(self):
 
@@ -259,16 +255,16 @@ class pose_estimator():
         err = np.concatenate((trans, rot)) - vicon_data - p_off
 
         self.plot_hist(err)
-        #self.save_to_csv(err)
-        #self.is_normal(err)
-        #self.cov(err)
+        self.save_to_csv(err)
+        self.is_normal(err)
+        self.cov(err)
 
 if __name__ == '__main__':
 
     with np.load('../calib_params/right_cam_calib_params.npz') as X:
                 _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
 
-    cam_matrix[0, 0] = 780.0
-    cam_matrix[1, 1] = 680.0
+    cam_matrix[0, 0] = 750.0
+    cam_matrix[1, 1] = 640.0
     pe = pose_estimator(cam_matrix, distortion_matrix)
     pe.main()

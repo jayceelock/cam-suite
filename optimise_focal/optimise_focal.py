@@ -100,7 +100,7 @@ class ErrFinder():
 
         trans[:, 0] = [trans[:, 0][i]*-10  + 0 for i in range(0, len(trans[:, 0]))]
         trans[:, 1] = [trans[:, 1][i]*-10  + 0 for i in range(0, len(trans[:, 1]))]
-        trans[:, 2] = [trans[:, 2][i]*-1  + 0 for i in range(0, len(trans[:, 2]))]
+        trans[:, 2] = [trans[:, 2][i]*-10  + 0 for i in range(0, len(trans[:, 2]))]
 
         rot[:, 0] = [rot[:, 0][i] - 0 for i in range(0, len(rot[:, 0]))]
         rot[:, 1] = [rot[:, 1][i]*-1 for i in range(0, len(rot[:, 1]))]
@@ -112,7 +112,7 @@ class ErrFinder():
 
         # Make cam coordinate system coincide with Vicon coordinate system
         temp_trans[:, 0] = trans[:, 0]
-        temp_trans[:, 1] = trans[:, 2]#*1.5
+        temp_trans[:, 1] = trans[:, 2]
         temp_trans[:, 2] = trans[:, 1]
 
         temp_rot[:, 0] = rot[:, 2]
@@ -215,8 +215,8 @@ class ErrFinder():
                 err = cam_data - vicon_data - p_off
                 
                 # Scale the errors by dividing by their expected maxima
-                err[0, :] = err[0, :] / 2000.0
-                err[1, :] = err[1, :] / 5000.0
+                err[0, :] = err[0, :] / 1500.0
+                err[1, :] = err[1, :] / 3000.0
                 err[2, :] = err[2, :] / 1000.0
 
                 err_sum = np.sqrt(np.sum(err[:3, :] ** 2, axis = 1))
@@ -263,7 +263,7 @@ class ErrFinder():
 
         e_t = []
 
-        for i in range(6):
+        for i in range(50):
             # Step 1: Find pose with focus length f
             trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.tr_n)
 
@@ -316,8 +316,8 @@ class ErrFinder():
         plt.title(titles[0])
         plt.show()
 
-        o_p, = plt.plot(o_trans[1, :] * 8 - p_off[1] * 8, 'r:')
-        i_p, = plt.plot(i_trans[1, :] * 5 - p_off[1] * 5, 'g--')
+        o_p, = plt.plot(o_trans[1, :] - p_off[1], 'r:')
+        i_p, = plt.plot(i_trans[1, :] - p_off[1], 'g--')
         v_p, = plt.plot(vicon_data[1, :], 'b_')
         plt.legend([o_p, i_p, v_p], ['Original', 'Improved', 'Vicon'])
         plt.title(titles[1])
