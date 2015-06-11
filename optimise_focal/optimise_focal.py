@@ -21,8 +21,8 @@ class ErrFinder():
         self.samples = random.sample(range(0, self.ts_n), self.tr_n)
 
         self.min_err = 10000000
-        self.min_x = 500.0
-        self.min_y = 500.0
+        self.min_x = 700.0
+        self.min_y = 700.0
 
     def estimate_pose(self, cam_matrix, distortion_matrix, n, training = True):
 
@@ -197,8 +197,12 @@ class ErrFinder():
 
     def find_err(self, vicon_data, p_off, cam_matrix, distortion_matrix, n):
 
-        f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
-        f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
+        # Intervals of 10
+        #f_x = range(int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[0, 0] / 10.0) * 10) + 60, 10)
+        #f_y = range(int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) - 50, int(math.ceil(cam_matrix[1, 1] / 10.0) * 10) + 60, 10)
+
+        f_x = range(int(cam_matrix[0, 0]) - 5, int(cam_matrix[0, 0]) + 5, 1)
+        f_y = range(int(cam_matrix[1, 1]) - 5, int(cam_matrix[1, 1]) + 5, 1)
 
         min_err_sum = 0
 
@@ -215,7 +219,7 @@ class ErrFinder():
                 err = cam_data - vicon_data - p_off
                 
                 # Scale the errors by dividing by their expected maxima
-                err[0, :] = err[0, :] / 1500.0
+                err[0, :] = err[0, :] / 1000.0
                 err[1, :] = err[1, :] / 3000.0
                 err[2, :] = err[2, :] / 1000.0
 
@@ -263,7 +267,7 @@ class ErrFinder():
 
         e_t = []
 
-        for i in range(50):
+        for i in range(20):
             # Step 1: Find pose with focus length f
             trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.tr_n)
 
@@ -285,11 +289,6 @@ class ErrFinder():
             # Step 6: Save data to CSV file
             self.save_data()
         print min_x, min_y
-
-        # Save convergence data
-        #convergencef = csv.writer(open('convergence.csv', 'w'))
-
-        #convergencef.writerow(focus_err)
 
         # Determine improved position and rotation
         trans, rot = self.estimate_pose(cam_matrix, distortion_matrix, self.ts_n, training = False)
