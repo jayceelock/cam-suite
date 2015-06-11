@@ -217,7 +217,7 @@ class ErrFinder():
                 cam_data = np.concatenate((trans, rot), axis = 0)
 
                 err = cam_data - vicon_data - p_off
-                
+
                 # Scale the errors by dividing by their expected maxima
                 err[0, :] = err[0, :] / 1000.0
                 err[1, :] = err[1, :] / 3000.0
