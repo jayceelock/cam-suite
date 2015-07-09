@@ -37,7 +37,7 @@ def main(argv):
         outfile = "hd_" + l_or_r + "_" + outfile
     else:
         outfile =  l_or_r + "_" + outfile
-    outfile = "videos/" + outfile
+    outfile = "../videos/" + outfile
 
     try:
         cap = cv2.VideoCapture(cam_nbr)

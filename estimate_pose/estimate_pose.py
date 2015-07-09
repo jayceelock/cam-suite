@@ -17,7 +17,9 @@ def draw(img, corners, imgpts):
     return img
 
 def find_pos(tvecs):
-    return [15 * tvecs[0, 0], 15 * tvecs[1, 0], 15 * tvecs[2, 0]]
+    print tvecs
+    #return [15 * tvecs[0, 0], 15 * tvecs[1, 0], 15 * tvecs[2, 0]]
+    return [tvecs[0, 0], tvecs[1, 0], tvecs[2, 0]]
 
 def find_euler_angles(rvecs):
     rmat = cv2.Rodrigues(rvecs)[0]
@@ -59,11 +61,8 @@ def main(argv):
             outfile = arg
         elif opt in ("-c", "--left-or-right"):
             l_or_r = arg
-            #calib_file = l_or_r + calib_file
         elif opt in ("-e", "--hi-def"):
             high_def = True
-            #infile = "hd_" + infile
-            #calib_file = "hd_" + calib_file
 
     if high_def:
         infile = "hd_" + l_or_r + "_" + infile
@@ -72,12 +71,15 @@ def main(argv):
         infile = l_or_r + "_" + infile
         calib_file = l_or_r + calib_file
 
-    infile = "videos/" + infile
-    outfile = "data/" + outfile
+    infile = "../videos/test_26jun/" + infile
+    #infile = "../videos/vicon_videos/" + infile
+    outfile = "../data/" + outfile
     print outfile
 
-    with np.load('calib_params/' + calib_file) as X:
+    with np.load('../calib_params/' + calib_file) as X:
         _, cam_matrix, distortion_matrix, r_vec, _ = [X[i] for i in ('ret', 'cam_matrix', 'distortion_matrix', 'r_vec', 't_vec')]
+    cam_matrix[0, 0] = 734.0 
+    cam_matrix[1, 1] = 640.0
 
     axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, 3]]).reshape(-1, 3)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -94,22 +96,32 @@ def main(argv):
     csvwriter = csv.writer(csvfile)
     csvwriter.writerow(['roll', 'pitch', 'yaw', 'x', 'y', 'z'])
 
+    #tvecs = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+    #rvecs = np.array([0.0, 0.0, 0.0])
+    #tvecs = np.array([0, 0, 0])
+
     while(cap.isOpened()):
         ret, frame = cap.read()
         grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        ret, corners = cv2.findChessboardCorners(grey, search_size, None)
+        ret, corners = cv2.findChessboardCorners(grey, search_size, flags=cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK)
 
         if ret:
             cv2.cornerSubPix(grey, corners, (11, 11), (-1, -1), criteria)
-            rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix)
+            try:
+                rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix, tvec=tvecs, rvec=rvecs, useExtrinsicGuess=True)
+            except UnboundLocalError:
+                rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix)
             imgpts, jacobian = cv2.projectPoints(axis, rvecs, tvecs, cam_matrix, distortion_matrix)
 
-            csvwriter.writerow(find_euler_angles(rvecs) + find_pos(tvecs))
 
             frame = draw(frame, corners, imgpts)
         else:
             print 'Corners not found in this frame'
+            #csvwriter.writerow((0, 0, 0, 0, 0, 0))
+        try:
+            csvwriter.writerow(find_euler_angles(rvecs) + find_pos(tvecs))
+        except UnboundLocalError:
             csvwriter.writerow((0, 0, 0, 0, 0, 0))
 
         cv2.imshow('frame', frame)
