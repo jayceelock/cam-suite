@@ -98,9 +98,9 @@ class ErrFinder():
         trans = np.asarray(trans)
         rot = np.asarray(rot)
 
-        trans[:, 0] = [trans[:, 0][i]*-10  + 0 for i in range(0, len(trans[:, 0]))]
-        trans[:, 1] = [trans[:, 1][i]*-10  + 0 for i in range(0, len(trans[:, 1]))]
-        trans[:, 2] = [trans[:, 2][i]*-10  + 0 for i in range(0, len(trans[:, 2]))]
+        trans[:, 0] = [trans[:, 0][i]*-1  + 0 for i in range(0, len(trans[:, 0]))]
+        trans[:, 1] = [trans[:, 1][i]*-1  + 0 for i in range(0, len(trans[:, 1]))]
+        trans[:, 2] = [trans[:, 2][i]*-1  + 0 for i in range(0, len(trans[:, 2]))]
 
         rot[:, 0] = [rot[:, 0][i] - 0 for i in range(0, len(rot[:, 0]))]
         rot[:, 1] = [rot[:, 1][i]*-1 for i in range(0, len(rot[:, 1]))]
@@ -360,7 +360,7 @@ class ErrFinder():
         return img
 
     def find_pos(self, tvecs):
-        return [15 * tvecs[0, 0], 15 * tvecs[1, 0], 15 * tvecs[2, 0]]
+        #return [15 * tvecs[0, 0], 15 * tvecs[1, 0], 15 * tvecs[2, 0]]
         #Return in mm 
         #return [100*tvecs[0, 0], 100*tvecs[1, 0], 100*tvecs[2, 0]]
         return [tvecs[0, 0], tvecs[1, 0], tvecs[2, 0]]
