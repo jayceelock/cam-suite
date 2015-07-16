@@ -114,15 +114,17 @@ def main(argv):
                 rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners, cam_matrix, distortion_matrix)
             imgpts, jacobian = cv2.projectPoints(axis, rvecs, tvecs, cam_matrix, distortion_matrix)
 
+            csvwriter.writerow(find_euler_angles(rvecs) + find_pos(tvecs))
 
             frame = draw(frame, corners, imgpts)
         else:
             print 'Corners not found in this frame'
+            csvwriter.writerow((float('inf'), float('inf'), float('inf'), float('inf'), float('inf'), float('inf')))
             #csvwriter.writerow((0, 0, 0, 0, 0, 0))
-        try:
-            csvwriter.writerow(find_euler_angles(rvecs) + find_pos(tvecs))
-        except UnboundLocalError:
-            csvwriter.writerow((0, 0, 0, 0, 0, 0))
+        #try:
+            #csvwriter.writerow(find_euler_angles(rvecs) + find_pos(tvecs))
+        #except UnboundLocalError:
+            #csvwriter.writerow((float('inf'), float('inf'), float('inf'), float('inf'), float('inf'), float('inf')))
 
         cv2.imshow('frame', frame)
 

@@ -33,7 +33,7 @@ class ErrFinder():
         objp = np.zeros((search_size[0] * search_size[1], 3), np.float32)
         objp[:, :2] = np.mgrid[0:search_size[0], 0:search_size[1]].T.reshape(-1, 2)
 
-        cap = cv2.VideoCapture('../videos/right_sd_test2.avi')
+        cap = cv2.VideoCapture('../videos/vicon_videos/right_sd_test2.avi')
 
         trans = []
         rot = []
@@ -218,13 +218,6 @@ class ErrFinder():
 
                 err = cam_data - vicon_data - p_off
 
-                # Scale the errors by dividing by their expected maxima
-                err[0, :] = err[0, :] / 1000.0
-                err[1, :] = err[1, :] / 3000.0
-                err[2, :] = err[2, :] / 1000.0
-
-                err_sum = np.sqrt(np.sum(err[:3, :] ** 2, axis = 1))
-
                 if self.camdata == None:
                     self.camdata = cam_data
                     self.vicondata = vicon_data
@@ -234,6 +227,13 @@ class ErrFinder():
                     self.camdata = np.concatenate((self.camdata, cam_data), axis = 1)
                     self.vicondata = np.concatenate((self.vicondata, vicon_data), axis = 1)
                     self.errdata = np.concatenate((self.errdata, err), axis = 1)
+
+                # Scale the errors by dividing by their expected maxima
+                err[0, :] = err[0, :] / 1000.0
+                err[1, :] = err[1, :] / 3000.0
+                err[2, :] = err[2, :] / 1000.0
+
+                err_sum = np.sqrt(np.sum(err[:3, :] ** 2, axis = 1))
 
                 print 'Error:' + str(err_sum)
                 print 'Norm:' + str(np.linalg.norm(err_sum))
@@ -361,6 +361,9 @@ class ErrFinder():
 
     def find_pos(self, tvecs):
         return [15 * tvecs[0, 0], 15 * tvecs[1, 0], 15 * tvecs[2, 0]]
+        #Return in mm 
+        #return [100*tvecs[0, 0], 100*tvecs[1, 0], 100*tvecs[2, 0]]
+        return [tvecs[0, 0], tvecs[1, 0], tvecs[2, 0]]
 
     def find_euler_angles(self, rvecs):
         rmat = cv2.Rodrigues(rvecs)[0]
